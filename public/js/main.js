@@ -1,0 +1,550 @@
+/**
+ * Gestion Stock - Design System JS
+ * Toute l'interaction UI centralisée via data-* attributes
+ */
+(function () {
+  'use strict';
+
+  /* ============================
+     SIDEBAR (mobile toggle + collapsible sections)
+     ============================ */
+  const sidebar = document.querySelector('[data-sidebar]');
+  const backdrop = document.querySelector('[data-sidebar-backdrop]');
+  const toggle = document.querySelector('[data-sidebar-toggle]');
+  const close = document.querySelector('[data-sidebar-close]');
+
+  function openSidebar() {
+    if (!sidebar) return;
+    sidebar.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSidebar() {
+    if (!sidebar) return;
+    sidebar.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  if (toggle) toggle.addEventListener('click', openSidebar);
+  if (close) close.addEventListener('click', closeSidebar);
+  if (backdrop) backdrop.addEventListener('click', closeSidebar);
+
+  /* Collapsible sections - toggle */
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('[data-toggle-section]');
+    if (btn) {
+      const section = btn.closest('[data-section]');
+      const content = section.querySelector('.sidebar-section-content');
+      const isCollapsed = content.classList.contains('collapsed');
+      
+      content.classList.toggle('collapsed');
+      section.setAttribute('data-collapsed', !isCollapsed);
+      
+      // Sauvegarder l'état dans localStorage
+      if (section.dataset.section) {
+        localStorage.setItem('sidebar-' + section.dataset.section, !isCollapsed ? 'collapsed' : 'expanded');
+      }
+    }
+  });
+
+  /* Restaurer l'état des sections depuis localStorage */
+  document.querySelectorAll('[data-section]').forEach(function(section) {
+    const savedState = localStorage.getItem('sidebar-' + section.dataset.section);
+    if (savedState === 'collapsed') {
+      const content = section.querySelector('.sidebar-section-content');
+      if (content) {
+        content.classList.add('collapsed');
+        section.setAttribute('data-collapsed', 'true');
+      }
+    }
+  });
+
+  /* ============================
+     GLOBAL SEARCH - Ctrl+K
+     ============================ */
+  const searchInput = document.getElementById('globalSearch');
+  const searchDropdown = document.getElementById('searchResults');
+  let searchTimeout = null;
+  let activeSearchIndex = -1;
+
+  // Raccourci clavier Ctrl+K
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      if (searchInput) {
+        searchInput.focus();
+        if (searchDropdown) searchDropdown.classList.remove('hidden');
+      }
+    }
+    
+    // Escape pour fermer
+    if (e.key === 'Escape' && searchDropdown && !searchDropdown.classList.contains('hidden')) {
+      searchDropdown.classList.add('hidden');
+      if (searchInput) searchInput.blur();
+    }
+  });
+
+  // Recherche en temps réel
+  if (searchInput) {
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.trim();
+      
+      if (query.length < 2) {
+        if (searchDropdown) searchDropdown.classList.add('hidden');
+        return;
+      }
+      
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(function() {
+        performSearch(query);
+      }, 300);
+    });
+    
+    // Focus : afficher le dropdown
+    searchInput.addEventListener('focus', function() {
+      if (searchInput.value.trim().length >= 2 && searchDropdown) {
+        searchDropdown.classList.remove('hidden');
+      }
+    });
+    
+    // Navigation clavier dans les résultats
+    searchInput.addEventListener('keydown', function(e) {
+      if (!searchDropdown || searchDropdown.classList.contains('hidden')) return;
+      
+      const items = searchDropdown.querySelectorAll('.search-result-item');
+      
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeSearchIndex = Math.min(activeSearchIndex + 1, items.length - 1);
+        updateActiveSearchItem(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeSearchIndex = Math.max(activeSearchIndex - 1, -1);
+        updateActiveSearchItem(items);
+      } else if (e.key === 'Enter' && activeSearchIndex >= 0) {
+        e.preventDefault();
+        items[activeSearchIndex].click();
+      }
+    });
+  }
+
+  function updateActiveSearchItem(items) {
+    items.forEach(function(item, index) {
+      if (index === activeSearchIndex) {
+        item.classList.add('active');
+        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      } else {
+        item.classList.remove('active');
+      }
+    });
+  }
+
+  function performSearch(query) {
+    if (!searchDropdown) return;
+    
+    const loading = searchDropdown.querySelector('.search-loading');
+    const empty = searchDropdown.querySelector('.search-empty');
+    const container = searchDropdown.querySelector('.search-results-container');
+    
+    searchDropdown.classList.remove('hidden');
+    if (loading) loading.classList.remove('hidden');
+    if (empty) empty.classList.add('hidden');
+    if (container) container.innerHTML = '';
+    
+    // Appel AJAX vers le backend
+    fetch('?action=api_search&q=' + encodeURIComponent(query))
+      .then(function(response) { return response.json(); })
+      .then(function(data) {
+        if (loading) loading.classList.add('hidden');
+        
+        if (!data.results || data.results.length === 0) {
+          if (empty) empty.classList.remove('hidden');
+          return;
+        }
+        
+        // Grouper par catégorie
+        const grouped = {};
+        data.results.forEach(function(item) {
+          if (!grouped[item.category]) grouped[item.category] = [];
+          grouped[item.category].push(item);
+        });
+        
+        // Afficher les résultats
+        let html = '';
+        Object.keys(grouped).forEach(function(category) {
+          html += '<div class="search-section">';
+          html += '<h4 class="search-section-title"><i class="fas fa-' + getCategoryIcon(category) + ' mr-2"></i>' + category + '</h4>';
+          html += '<div class="search-section-items">';
+          
+          grouped[category].forEach(function(item) {
+            html += '<a href="' + item.url + '" class="search-result-item">';
+            html += '<div class="search-result-icon"><i class="fas fa-' + (item.icon || 'file') + '"></i></div>';
+            html += '<div class="search-result-content">';
+            html += '<div class="search-result-title">' + highlightQuery(item.title, query) + '</div>';
+            if (item.subtitle) html += '<div class="search-result-subtitle">' + item.subtitle + '</div>';
+            html += '</div></a>';
+          });
+          
+          html += '</div></div>';
+        });
+        
+        if (container) container.innerHTML = html;
+        activeSearchIndex = -1;
+      })
+      .catch(function(error) {
+        console.error('Search error:', error);
+        if (loading) loading.classList.add('hidden');
+        if (empty) empty.classList.remove('hidden');
+      });
+  }
+
+  function getCategoryIcon(category) {
+    const icons = {
+      'Utilisateurs': 'user',
+      'Groupes': 'layer-group',
+      'Produits': 'tag',
+      'Commandes': 'shopping-cart',
+      'Factures': 'file-invoice'
+    };
+    return icons[category] || 'file';
+  }
+
+  function highlightQuery(text, query) {
+    const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+    return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
+  }
+
+  // Fermer la recherche si clic externe
+  document.addEventListener('click', function(e) {
+    if (searchDropdown && !searchDropdown.classList.contains('hidden')) {
+      if (!e.target.closest('.topbar-search-wrapper')) {
+        searchDropdown.classList.add('hidden');
+      }
+    }
+  });
+
+  /* ============================
+     ACTION SHEETS (Mobile)
+     ============================ */
+  document.addEventListener('click', function(e) {
+    // Ouvrir action sheet
+    const trigger = e.target.closest('[data-action-sheet-toggle]');
+    if (trigger) {
+      const targetId = trigger.getAttribute('data-action-sheet-toggle');
+      const sheet = document.getElementById(targetId);
+      if (sheet) {
+        sheet.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+      e.preventDefault();
+    }
+    
+    // Fermer action sheet
+    const closeBtn = e.target.closest('[data-action-sheet-close]');
+    if (closeBtn || e.target.classList.contains('action-sheet-backdrop')) {
+      const sheet = closeBtn ? closeBtn.closest('.action-sheet') : e.target.closest('.action-sheet');
+      if (sheet) {
+        sheet.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+    }
+  });
+
+  /* ============================
+     MOBILE SEARCH MODAL
+     ============================ */
+  document.addEventListener('click', function(e) {
+    const trigger = e.target.closest('[data-mobile-search-toggle]');
+    if (trigger) {
+      const modal = document.getElementById('mobileSearchModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+        // Focus sur l'input
+        setTimeout(function() {
+          const input = modal.querySelector('#globalSearch');
+          if (input) input.focus();
+        }, 100);
+      }
+      e.preventDefault();
+    }
+  });
+
+  /* ============================
+     SWIPEABLE CARDS (Touch)
+     ============================ */
+  let swipeStartX = 0;
+  let swipeElement = null;
+  
+  document.addEventListener('touchstart', function(e) {
+    const card = e.target.closest('[data-swipeable]');
+    if (card) {
+      swipeStartX = e.touches[0].clientX;
+      swipeElement = card.querySelector('.swipeable-card-content');
+    }
+  }, { passive: true });
+  
+  document.addEventListener('touchmove', function(e) {
+    if (swipeElement) {
+      const currentX = e.touches[0].clientX;
+      const diffX = currentX - swipeStartX;
+      
+      // Limiter le swipe à ±100px
+      const clampedDiff = Math.max(-100, Math.min(100, diffX));
+      swipeElement.style.transform = 'translateX(' + clampedDiff + 'px)';
+    }
+  }, { passive: true });
+  
+  document.addEventListener('touchend', function(e) {
+    if (swipeElement) {
+      const transform = swipeElement.style.transform;
+      const translateX = parseInt(transform.replace(/[^0-9-]/g, '')) || 0;
+      
+      // Si swipe > 50px, laisser ouvert, sinon reset
+      if (Math.abs(translateX) > 50) {
+        swipeElement.style.transform = 'translateX(' + (translateX > 0 ? '100px' : '-100px') + ')';
+      } else {
+        swipeElement.style.transform = 'translateX(0)';
+      }
+      
+      swipeElement = null;
+    }
+  });
+
+  /* ============================
+     SEGMENTED CONTROL
+     ============================ */
+  document.addEventListener('click', function(e) {
+    const segment = e.target.closest('.segmented-control-item');
+    if (segment) {
+      const control = segment.closest('.segmented-control');
+      control.querySelectorAll('.segmented-control-item').forEach(function(item) {
+        item.classList.remove('active');
+      });
+      segment.classList.add('active');
+      
+      // Trigger event
+      const index = segment.getAttribute('data-segment-index');
+      const event = new CustomEvent('segmentchange', { detail: { index: parseInt(index) } });
+      control.dispatchEvent(event);
+    }
+  });
+
+  /* ============================
+     RESPONSIVE UTILITIES
+     ============================ */
+  
+  // Détecter si on est sur mobile
+  function isMobile() {
+    return window.innerWidth < 768;
+  }
+  
+  // Détecter si on est sur tablette
+  function isTablet() {
+    return window.innerWidth >= 768 && window.innerWidth < 1024;
+  }
+  
+  // Adapter l'interface au resize
+  window.addEventListener('resize', function() {
+    // Fermer la sidebar si on passe en desktop
+    if (window.innerWidth >= 768 && sidebar && sidebar.classList.contains('open')) {
+      closeSidebar();
+    }
+  });
+
+  /* ============================
+     VIEWPORT HEIGHT FIX (Mobile Safari)
+     ============================ */
+  function setVH() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', vh + 'px');
+  }
+  
+  setVH();
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', setVH);
+
+  /* ============================
+     MODALS — data-modal-toggle, data-modal-close
+     ============================ */
+  document.addEventListener('click', function (e) {
+    // Ouverture
+    var toggleBtn = e.target.closest('[data-modal-toggle]');
+    if (toggleBtn) {
+      var targetId = toggleBtn.getAttribute('data-modal-toggle');
+      var modal = document.getElementById(targetId);
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+        // Focus trap
+        var firstInput = modal.querySelector('input, select, textarea, button');
+        if (firstInput) setTimeout(function () { firstInput.focus(); }, 100);
+
+        // Remplir le formulaire d'édition si data-edit-user ou data-edit-group
+        var json;
+        if ((json = toggleBtn.getAttribute('data-edit-user'))) {
+          try {
+            var u = JSON.parse(json), el;
+            if ((el = document.getElementById('edit_id'))) el.value = u.id_utilisateur || '';
+            if ((el = document.getElementById('edit_nom'))) el.value = u.nom_complet || '';
+            if ((el = document.getElementById('edit_login'))) el.value = u.login || '';
+            if ((el = document.getElementById('edit_groupe'))) el.value = u.id_groupe || '';
+            if ((el = document.getElementById('edit_actif'))) el.checked = u.actif == 1 || u.actif == '1';
+            if ((el = document.getElementById('edit_exp'))) el.value = u.date_expiration_mdp || '';
+            if ((el = document.getElementById('edit_password'))) el.value = '';
+          } catch(_) {}
+        } else if ((json = toggleBtn.getAttribute('data-edit-group'))) {
+          try {
+            var g = JSON.parse(json), el;
+            if ((el = document.getElementById('edit_id'))) el.value = g.id_groupe || '';
+            if ((el = document.getElementById('edit_nom'))) el.value = g.nom_groupe || '';
+            if ((el = document.getElementById('edit_desc'))) el.value = g.description || '';
+          } catch(_) {}
+        }
+      }
+      e.preventDefault();
+    }
+
+    // Fermeture par bouton
+    var closeBtn = e.target.closest('[data-modal-close]');
+    if (closeBtn) {
+      var modalEl = closeBtn.closest('.modal-overlay');
+      if (modalEl) {
+        modalEl.classList.add('hidden');
+        modalEl.classList.remove('flex');
+        document.body.style.overflow = '';
+        if (modalEl.id === 'confirmModal') confirmTarget = null;
+      }
+      e.preventDefault();
+    }
+
+    // Fermeture par clic sur le fond
+    if (e.target.classList.contains('modal-overlay')) {
+      e.target.classList.add('hidden');
+      e.target.classList.remove('flex');
+      document.body.style.overflow = '';
+      if (e.target.id === 'confirmModal') confirmTarget = null;
+    }
+  });
+
+  // Fermeture modal avec Echap
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      var openModal = document.querySelector('.modal-overlay.flex');
+      if (openModal) {
+        openModal.classList.add('hidden');
+        openModal.classList.remove('flex');
+        document.body.style.overflow = '';
+        if (openModal.id === 'confirmModal') confirmTarget = null;
+      }
+      closeSidebar();
+    }
+  });
+
+  /* ============================
+     TOASTS — iPhone-style auto-dismiss
+     ============================ */
+  function dismissToast(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('toast-leave');
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 300);
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    var toasts = document.querySelectorAll('#toast-container > .toast');
+    toasts.forEach(function (toast) {
+      setTimeout(function () { dismissToast(toast.id); }, 5000);
+    });
+  });
+
+  /* ============================
+     SELECT ALL checkbox
+     ============================ */
+  document.addEventListener('change', function (e) {
+    if (e.target.id === 'selectAll' || e.target.getAttribute('data-select-all') !== null) {
+      var name = e.target.getAttribute('data-select-name') || 'droits[]';
+      var checkboxes = document.querySelectorAll('input[name="' + name + '"]');
+      checkboxes.forEach(function (cb) { cb.checked = e.target.checked; });
+    }
+  });
+
+  /* ============================
+     CONFIRM — data-confirm (custom modal)
+     ============================ */
+  var confirmTarget = null;
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-confirm]');
+    if (el) {
+      e.preventDefault();
+      var message = el.getAttribute('data-confirm') || 'Confirmez-vous cette action ?';
+      var confirmModal = document.getElementById('confirmModal');
+      var confirmMsg = document.getElementById('confirmMessage');
+      var confirmLink = document.getElementById('confirmLink');
+      if (!confirmModal || !confirmMsg || !confirmLink) return;
+      confirmMsg.textContent = message;
+      var href = el.getAttribute('href');
+      if (href) {
+        confirmTarget = { href: href, form: null };
+        confirmLink.setAttribute('href', href);
+        confirmLink.style.display = 'inline-flex';
+      } else {
+        var form = el.closest('form');
+        if (form) {
+          confirmTarget = { href: null, form: form };
+          confirmLink.setAttribute('href', '#');
+          confirmLink.style.display = 'inline-flex';
+        } else {
+          confirmTarget = null;
+          confirmLink.style.display = 'none';
+        }
+      }
+      confirmModal.classList.remove('hidden');
+      confirmModal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+  });
+  document.getElementById('confirmLink').addEventListener('click', function (e) {
+    if (confirmTarget && confirmTarget.form) {
+      e.preventDefault();
+      confirmTarget.form.submit();
+    }
+  });
+
+  /* ============================
+     DROPDOWN — data-dropdown-toggle
+     ============================ */
+  document.addEventListener('click', function (e) {
+    var dropdownBtn = e.target.closest('[data-dropdown-toggle]');
+    if (dropdownBtn) {
+      var targetId2 = dropdownBtn.getAttribute('data-dropdown-toggle');
+      var dropdown = document.getElementById(targetId2);
+      if (dropdown) {
+        var isHidden = dropdown.classList.contains('hidden');
+        document.querySelectorAll('.dropdown').forEach(function (d) {
+          d.classList.add('hidden');
+        });
+        if (isHidden) {
+          dropdown.classList.remove('hidden');
+        }
+      }
+      e.stopPropagation();
+    } else {
+      document.querySelectorAll('.dropdown').forEach(function (d) {
+        d.classList.add('hidden');
+      });
+    }
+  });
+
+  /* ============================
+     SIDEBAR ACTIVE ITEM (highlight)
+     ============================ */
+  document.querySelectorAll('.sidebar-item').forEach(function (item) {
+    if (item.classList.contains('active')) {
+      item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  });
+})();

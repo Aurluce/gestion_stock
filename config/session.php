@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/fonctions.php';
+require_once __DIR__ . '/autoload.php';
 
 session_start();
 
@@ -49,4 +50,7 @@ function checkRightIfLogged($rightName) {
     $stmt->execute([$_SESSION['user_id'], $rightName]);
     return $stmt->fetchColumn() > 0;
 }
+
+// Chargement des composants du design system
+require_once __DIR__ . '/../views/components/autoload.php';
 ?>
