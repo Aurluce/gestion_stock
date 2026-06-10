@@ -11,7 +11,7 @@ class AuthController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = $this->userModel->findByLogin($_POST['login'] ?? '');
             if ($user && $user['actif'] && password_verify($_POST['password'] ?? '', $user['password_hash'])) {
-                session_start();
+                if (session_status() === PHP_SESSION_NONE) session_start();
                 $_SESSION['user_id'] = $user['id_utilisateur'];
                 $_SESSION['user_name'] = $user['nom_complet'];
                 $this->pdo->prepare("UPDATE utilisateur.utilisateur SET derniere_connexion = NOW(), ip_derniere_connexion = ? WHERE id_utilisateur = ?")

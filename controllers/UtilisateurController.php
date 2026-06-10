@@ -18,27 +18,25 @@ class UtilisateurController {
     
     public function groupes() {
         checkRight('creer_groupe');
-        $message = $error = '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($_POST['action'] === 'add') {
                 if ($this->groupeModel->create(trim($_POST['nom_groupe']), trim($_POST['description']))) {
                     logAudit($this->pdo, $_SESSION['user_id'], 'INSERT', 'groupe', $this->pdo->lastInsertId(), null, ['nom' => $_POST['nom_groupe']]);
-                    $message = "Groupe ajouté.";
-                } else $error = "Erreur lors de l'ajout.";
+                    setFlash('Groupe ajouté.', 'success');
+                } else setFlash("Erreur lors de l'ajout.", 'danger');
             } elseif ($_POST['action'] === 'edit') {
                 if ($this->groupeModel->update($_POST['id_groupe'], trim($_POST['nom_groupe']), trim($_POST['description']))) {
                     logAudit($this->pdo, $_SESSION['user_id'], 'UPDATE', 'groupe', $_POST['id_groupe'], null, ['nom' => $_POST['nom_groupe']]);
-                    $message = "Groupe modifié.";
-                } else $error = "Erreur lors de la modification.";
+                    setFlash('Groupe modifié.', 'success');
+                } else setFlash("Erreur lors de la modification.", 'danger');
             }
-        }
-        if (isset($_GET['delete'])) {
+        } elseif (isset($_GET['delete'])) {
             if ($this->groupeModel->hasUsers($_GET['delete']))
-                $error = "Impossible de supprimer ce groupe car des utilisateurs y sont rattachés.";
+                setFlash("Impossible de supprimer ce groupe car des utilisateurs y sont rattachés.", 'danger');
             elseif ($this->groupeModel->delete($_GET['delete'])) {
                 logAudit($this->pdo, $_SESSION['user_id'], 'DELETE', 'groupe', $_GET['delete'], null, null);
-                $message = "Groupe supprimé.";
-            } else $error = "Erreur lors de la suppression.";
+                setFlash('Groupe supprimé.', 'success');
+            } else setFlash("Erreur lors de la suppression.", 'danger');
         }
         $groupes = $this->groupeModel->getAll();
         require __DIR__ . '/../views/utilisateur/groupes.php';
@@ -60,11 +58,10 @@ class UtilisateurController {
         if (!$groupe) die("Groupe introuvable.");
         $actuelsIds = array_column($this->droitModel->getByGroupe($groupeId), 'id_droit');
         $tousDroits = $this->droitModel->getAll();
-        $message = '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->droitModel->assignToGroup($groupeId, $_POST['droits'] ?? []);
             logAudit($this->pdo, $_SESSION['user_id'], 'UPDATE', 'groupe_droit', $groupeId, null, ['droits' => $_POST['droits'] ?? []]);
-            $message = "Droits mis à jour.";
+            setFlash('Droits mis à jour.', 'success');
             $actuelsIds = array_column($this->droitModel->getByGroupe($groupeId), 'id_droit');
         }
         require __DIR__ . '/../views/utilisateur/groupes_droits.php';
@@ -72,39 +69,47 @@ class UtilisateurController {
     
     public function utilisateurs() {
         checkRight('creer_utilisateur');
-        $message = $error = '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($_POST['action'] === 'add') {
-                $data = [
-                    'id_groupe' => $_POST['id_groupe'], 'nom_complet' => trim($_POST['nom_complet']),
-                    'login' => trim($_POST['login']), 'password' => $_POST['password'],
-                    'actif' => isset($_POST['actif']) ? 1 : 0,
-                    'date_expiration_mdp' => $_POST['date_expiration_mdp'] ?: null
-                ];
-                if ($this->userModel->create($data)) {
-                    logAudit($this->pdo, $_SESSION['user_id'], 'INSERT', 'utilisateur', $this->pdo->lastInsertId(), null, ['login' => $data['login']]);
-                    $message = "Utilisateur ajouté.";
-                } else $error = "Erreur lors de l'ajout.";
+                if (empty($_POST['id_groupe'])) {
+                    setFlash('Veuillez sélectionner un groupe.', 'danger');
+                } else {
+                    $data = [
+                        'id_groupe' => $_POST['id_groupe'], 'nom_complet' => trim($_POST['nom_complet']),
+                        'login' => trim($_POST['login']), 'password' => $_POST['password'],
+                        'actif' => isset($_POST['actif']) ? 1 : 0,
+                        'date_expiration_mdp' => !empty($_POST['date_expiration_mdp']) ? $_POST['date_expiration_mdp'] : null
+                    ];
+                    if ($this->userModel->create($data)) {
+                        logAudit($this->pdo, $_SESSION['user_id'], 'INSERT', 'utilisateur', $this->pdo->lastInsertId(), null, ['login' => $data['login']]);
+                        setFlash('Utilisateur ajouté.', 'success');
+                    } else setFlash("Erreur lors de l'ajout.", 'danger');
+                }
             } elseif ($_POST['action'] === 'edit') {
-                $id = $_POST['id_utilisateur'];
-                $data = [
-                    'id_groupe' => $_POST['id_groupe'], 'nom_complet' => trim($_POST['nom_complet']),
-                    'login' => trim($_POST['login']), 'actif' => isset($_POST['actif']) ? 1 : 0,
-                    'date_expiration_mdp' => $_POST['date_expiration_mdp'] ?: null
-                ];
-                if (!empty($_POST['password'])) $data['password'] = $_POST['password'];
-                if ($this->userModel->update($id, $data)) {
-                    logAudit($this->pdo, $_SESSION['user_id'], 'UPDATE', 'utilisateur', $id, null, ['login' => $data['login']]);
-                    $message = "Utilisateur modifié.";
-                } else $error = "Erreur lors de la modification.";
+                if (empty($_POST['id_groupe'])) {
+                    setFlash('Veuillez sélectionner un groupe.', 'danger');
+                } else {
+                    $id = $_POST['id_utilisateur'];
+                    $data = [
+                        'id_groupe' => $_POST['id_groupe'], 'nom_complet' => trim($_POST['nom_complet']),
+                        'login' => trim($_POST['login']), 'actif' => isset($_POST['actif']) ? 1 : 0,
+                        'date_expiration_mdp' => !empty($_POST['date_expiration_mdp']) ? $_POST['date_expiration_mdp'] : null
+                    ];
+                    if (!empty($_POST['password'])) $data['password'] = $_POST['password'];
+                    if ($this->userModel->update($id, $data)) {
+                        logAudit($this->pdo, $_SESSION['user_id'], 'UPDATE', 'utilisateur', $id, null, ['login' => $data['login']]);
+                        setFlash('Utilisateur modifié.', 'success');
+                    } else {
+                        setFlash("Erreur lors de la modification.", 'danger');
+                    }
+                }
             }
-        }
-        if (isset($_GET['delete'])) {
-            if ($_GET['delete'] == $_SESSION['user_id']) $error = "Vous ne pouvez pas supprimer votre propre compte.";
+        } elseif (isset($_GET['delete'])) {
+            if ($_GET['delete'] == $_SESSION['user_id']) setFlash("Vous ne pouvez pas supprimer votre propre compte.", 'danger');
             elseif ($this->userModel->delete($_GET['delete'])) {
                 logAudit($this->pdo, $_SESSION['user_id'], 'DELETE', 'utilisateur', $_GET['delete'], null, null);
-                $message = "Utilisateur supprimé.";
-            } else $error = "Erreur lors de la suppression.";
+                setFlash('Utilisateur supprimé.', 'success');
+            } else setFlash("Erreur lors de la suppression.", 'danger');
         }
         $users = $this->userModel->getAll();
         $groupes = $this->groupeModel->getAll();
@@ -112,10 +117,6 @@ class UtilisateurController {
     }
     
 public function profil() {
-    $message = '';
-    $error = '';
-    
-    // Récupération des infos de l'utilisateur connecté
     $user = $this->userModel->getById($_SESSION['user_id']);
     
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -124,23 +125,21 @@ public function profil() {
         $confirm = $_POST['confirm_password'] ?? '';
         
         if (!password_verify($old, $user['password_hash'])) {
-            $error = "Ancien mot de passe incorrect.";
+            setFlash("Ancien mot de passe incorrect.", 'danger');
         } elseif ($new !== $confirm) {
-            $error = "Les nouveaux mots de passe ne correspondent pas.";
+            setFlash("Les nouveaux mots de passe ne correspondent pas.", 'danger');
         } elseif (strlen($new) < 4) {
-            $error = "Le mot de passe doit faire au moins 4 caractères.";
+            setFlash("Le mot de passe doit faire au moins 4 caractères.", 'danger');
         } else {
             $this->userModel->update($_SESSION['user_id'], ['password' => $new]);
             logAudit($this->pdo, $_SESSION['user_id'], 'UPDATE', 'utilisateur', $_SESSION['user_id'], null, ['changed_password' => true]);
-            $message = "Mot de passe modifié avec succès.";
-            // Recharger l'utilisateur après modification
+            setFlash('Mot de passe modifié avec succès.', 'success');
             $user = $this->userModel->getById($_SESSION['user_id']);
         }
     }
     
     $title = "Mon profil";
     ob_start();
-    // Passage de la variable $user à la vue
     require __DIR__ . '/../views/utilisateur/profil.php';
     $content = ob_get_clean();
     require __DIR__ . '/../views/layouts/main.php';

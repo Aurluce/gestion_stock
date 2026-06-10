@@ -1,0 +1,17 @@
+{
+    "name": "aurlucef/gestion-stock",
+    "description": "Gestion de Stock - Application de gestion d'inventaire",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "Aurlucef\\GestionStock\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "ArisRoman",
+            "email": "romanaris1@outlook.fr"
+        }
+    ],
+    "require": {}
+}

@@ -1,16 +1,78 @@
-<?php $title = "Journal d'audit"; ob_start(); 
-// ignorer les errreurs dde deprecation pour json_encode de ressources PDO
+<?php
+$title = "Journal d'audit";
+$breadcrumb = renderBreadcrumb([
+    ['label' => 'Accueil', 'href' => '?action=dashboard'],
+    ['label' => 'Utilisateurs', 'href' => '?action=utilisateurs'],
+    ['label' => 'Journal d\'audit']
+]);
 error_reporting(E_ALL & ~E_DEPRECATED);
-
+ob_start();
 ?>
-<div class="flex justify-between items-center mb-6"><h1 class="text-3xl font-bold">Journal d'audit</h1><a href="index.php?action=dashboard" class="bg-gray-500 text-white px-4 py-2 rounded">Retour</a></div>
-<div class="bg-white rounded shadow overflow-x-auto"><table class="min-w-full text-sm"><thead class="bg-gray-50"><tr><th>Date</th><th>Utilisateur</th><th>Action</th><th>Table</th><th>ID</th><th>Détails</th></tr></thead><tbody>
-<?php foreach ($logs as $log): ?>
-<tr class="border-b"><td><?= $log['date_heure'] ?></td><td><?= htmlspecialchars($log['utilisateur_nom'] ?? 'N/A') ?></td><td><?= $log['action'] ?></td><td><?= $log['table_cible'] ?></td><td><?= $log['id_enregistrement'] ?></td>
-<td><button onclick="toggleJson(<?= $log['id_audit'] ?>)" class="bg-blue-500 text-white px-2 py-1 rounded text-xs">Voir JSON</button>
-<div id="json_<?= $log['id_audit'] ?>" class="hidden mt-2 bg-gray-100 p-2 rounded text-xs overflow-auto max-w-md"><strong>Ancien :</strong> <?= htmlspecialchars($log['ancienne_valeur']) ?><br><strong>Nouveau :</strong> <?= htmlspecialchars($log['nouvelle_valeur']) ?></div></td></tr>
-<?php endforeach; ?>
-</tbody></table></div>
-<div class="flex justify-center space-x-2 mt-4"><?php for ($i=1;$i<=$pages;$i++): ?><a href="?action=journal_audit&page=<?= $i ?>" class="px-3 py-1 bg-gray-200 rounded <?= $i==$page?'bg-blue-600 text-white':'' ?>"><?= $i ?></a><?php endfor; ?></div>
-<script>function toggleJson(id) { document.getElementById('json_' + id).classList.toggle('hidden'); }</script>
-<?php $content = ob_get_clean(); require __DIR__ . '/../layouts/main.php'; ?>
+
+<?= renderPageHeader(
+    'Journal d\'audit',
+    'Historique des actions réalisées dans l\'application'
+) ?>
+
+<?php
+// Fonction de rendu des actions (détails)
+$actionsRenderer = function($row, $rowIndex) use ($logs) {
+    $log = $logs[$rowIndex] ?? null;
+    if (!$log) return '';
+    
+    return '<button onclick="toggleJson(' . $log['id_audit'] . ')" class="btn-icon" title="Voir les détails JSON">'
+         . '<i class="fas fa-code"></i></button>'
+         . '<div id="json_' . $log['id_audit'] . '" class="hidden mt-2 bg-neutral-95 p-3 rounded text-caption overflow-auto max-w-md border border-neutral-90">'
+         . '<div class="font-medium text-neutral-14">Ancienne valeur :</div>'
+         . '<pre class="text-neutral-30 text-xs whitespace-pre-wrap">' . htmlspecialchars($log['ancienne_valeur'] ?? 'N/A') . '</pre>'
+         . '<div class="font-medium text-neutral-14 mt-2">Nouvelle valeur :</div>'
+         . '<pre class="text-neutral-30 text-xs whitespace-pre-wrap">' . htmlspecialchars($log['nouvelle_valeur'] ?? 'N/A') . '</pre>'
+         . '</div>';
+};
+
+// Préparer les données pour le tableau responsive
+$tableData = array_map(function($log) {
+    $actionBadge = renderBadge(
+        $log['action'], 
+        $log['action'] === 'LOGIN' || $log['action'] === 'LOGOUT' ? 'info' : 'neutral'
+    );
+    
+    return [
+        '<span class="text-caption text-neutral-50">' . htmlspecialchars($log['date_heure']) . '</span>',
+        htmlspecialchars($log['utilisateur_nom'] ?? 'N/A'),
+        $actionBadge,
+        htmlspecialchars($log['table_cible'] ?? '-'),
+        htmlspecialchars($log['id_enregistrement'] ?? '-')
+    ];
+}, $logs);
+
+echo renderResponsiveTable(
+    ['Date', 'Utilisateur', 'Action', 'Table', 'ID'],
+    $tableData,
+    [
+        'mobileTitle' => 1,        // Utilisateur comme titre
+        'mobileSubtitle' => 0,     // Date comme sous-titre
+        'mobileBadge' => 2,        // Action en badge
+        'mobileHidden' => [4],     // Cacher ID sur mobile
+        'mobileFields' => [        // Champs personnalisés pour mobile
+            3 => 'Table'
+        ],
+        'actions' => $actionsRenderer,
+        'emptyMessage' => 'Aucune entrée d\'audit.'
+    ]
+);
+
+echo renderPagination($page, $pages, '?action=journal_audit');
+?>
+
+<script>
+function toggleJson(id) {
+    var el = document.getElementById('json_' + id);
+    if (el) el.classList.toggle('hidden');
+}
+</script>
+
+<?php
+$content = ob_get_clean();
+require __DIR__ . '/../layouts/main.php';
+?>
