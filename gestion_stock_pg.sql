@@ -2476,3 +2476,83 @@ INSERT INTO utilisateur.groupe_droit (id_groupe, id_droit) SELECT 1, id_droit FR
 -- Utilisateur admin (mot de passe = password)
 INSERT INTO utilisateur.utilisateur (id_groupe, nom_complet, login, password_hash, actif) 
 VALUES (1, 'Administrateur', 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', true);
+
+
+
+-- ==========================================
+-- AJOUT MODULE 3 - TABLE MOUVEMENT BANQUE
+-- ==========================================
+
+-- Table des mouvements bancaires
+CREATE TABLE IF NOT EXISTS structure.mouvement_banque
+(
+    id_mouvement_banque BIGSERIAL PRIMARY KEY,
+    id_banque INTEGER NOT NULL,
+    id_utilisateur INTEGER NOT NULL,
+    date_mouvement DATE DEFAULT CURRENT_DATE,
+    type_mouvement VARCHAR(20) NOT NULL,
+    montant NUMERIC(15,2) NOT NULL,
+    reference VARCHAR(100),
+    description TEXT,
+    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Clés étrangères
+ALTER TABLE structure.mouvement_banque ADD CONSTRAINT fk_mv_banque
+FOREIGN KEY (id_banque) REFERENCES structure.banque(id_banque) ON DELETE CASCADE;
+
+ALTER TABLE structure.mouvement_banque ADD CONSTRAINT fk_mv_banque_user
+FOREIGN KEY (id_utilisateur) REFERENCES utilisateur.utilisateur(id_utilisateur) ON DELETE CASCADE;
+
+-- Fonction de sauvegarde XML pour mouvement_banque
+CREATE OR REPLACE FUNCTION utilisateur.fn_backup_mouvement_banque()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    v_xml XML;
+BEGIN
+    v_xml := xmlelement(
+        NAME mouvement_banque,
+        xmlforest(
+            OLD.id_mouvement_banque,
+            OLD.id_banque,
+            OLD.type_mouvement,
+            OLD.montant,
+            OLD.date_mouvement
+        )
+    );
+    
+    INSERT INTO utilisateur.corbeille_xml (type_objet, id_objet, donnees_xml)
+    VALUES ('MOUVEMENT_BANQUE', OLD.id_mouvement_banque, v_xml);
+    
+    RETURN OLD;
+END;
+$$;
+
+-- Trigger de sauvegarde XML pour mouvement_banque
+CREATE TRIGGER trg_backup_mouvement_banque
+BEFORE DELETE ON structure.mouvement_banque
+FOR EACH ROW
+EXECUTE FUNCTION utilisateur.fn_backup_mouvement_banque();
+
+-- ==========================================
+-- DROITS BANQUES
+-- ==========================================
+
+INSERT INTO utilisateur.droit (nom_droit, module, description) VALUES
+('creer_banque', 'structure', 'Créer une banque'),
+('modifier_banque', 'structure', 'Modifier une banque'),
+('supprimer_banque', 'structure', 'Supprimer une banque'),
+('lister_banques', 'structure', 'Consulter la liste des banques'),
+('creer_mouvement_banque', 'structure', 'Créer un mouvement bancaire'),
+('etat_versements_periode', 'structure', 'Consulter l''état des versements par période')
+ON CONFLICT (nom_droit) DO NOTHING;
+
+-- Attribution des droits banques au groupe administrateur
+INSERT INTO utilisateur.groupe_droit (id_groupe, id_droit)
+SELECT 1, id_droit FROM utilisateur.droit 
+WHERE nom_droit IN ('creer_banque', 'modifier_banque', 'supprimer_banque', 
+                    'lister_banques', 'creer_mouvement_banque', 'etat_versements_periode')
+ON CONFLICT DO NOTHING;
