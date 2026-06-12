@@ -52,6 +52,238 @@ switch ($action) {
         require_once 'controllers/UtilisateurController.php';
         (new UtilisateurController($pdo))->journalAudit();
         break;
+
+    // ==========================================
+    // MODULE 3 - GESTION DE LA STRUCTURE
+    // ==========================================
+    
+    case 'familles':
+        require_once 'controllers/FamilleController.php';
+        $controller = new FamilleController($pdo);
+        $controller->index();
+        break;
+
+    case 'famille_creer':
+        require_once 'controllers/FamilleController.php';
+        $controller = new FamilleController($pdo);
+        $controller->create();
+        break;
+
+    case 'famille_enregistrer':
+        require_once 'controllers/FamilleController.php';
+        $controller = new FamilleController($pdo);
+        $controller->store();
+        break;
+
+    case 'famille_modifier':
+        require_once 'controllers/FamilleController.php';
+        $controller = new FamilleController($pdo);
+        $controller->edit();
+        break;
+
+    case 'famille_mettre_a_jour':
+        require_once 'controllers/FamilleController.php';
+        $controller = new FamilleController($pdo);
+        $controller->update();
+        break;
+
+    case 'famille_supprimer':
+        require_once 'controllers/FamilleController.php';
+        $controller = new FamilleController($pdo);
+        $controller->delete();
+        break;
+
+    case 'produits':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->index();
+        break;
+
+    case 'produit_creer':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->create();
+        break;
+
+    case 'produit_enregistrer':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->store();
+        break;
+
+    case 'produit_modifier':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->edit();
+        break;
+
+    case 'produit_mettre_a_jour':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->update();
+        break;
+
+    case 'produit_supprimer':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->delete();
+        break;
+
+    case 'produit_desactiver':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->disable();
+        break;
+        
+    case 'produit_activer':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->enable();
+        break;
+
+    case 'fournisseurs':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->index();
+        break;
+
+    case 'fournisseur_creer':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->create();
+        break;
+
+    case 'fournisseur_enregistrer':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->store();
+        break;
+
+    case 'fournisseur_modifier':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->edit();
+        break;
+
+    case 'fournisseur_mettre_a_jour':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->update();
+        break;
+
+    case 'fournisseur_supprimer':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->delete();
+        break;
+
+    case 'fournisseur_desactiver':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->disable();
+        break;
+
+    case 'fournisseur_activer':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->enable();
+        break;
+
+    case 'clients':
+        require_once 'controllers/ClientController.php';
+        $controller = new ClientController($pdo);
+        $controller->index();
+        break;
+
+    case 'client_creer':
+        require_once 'controllers/ClientController.php';
+        $controller = new ClientController($pdo);
+        $controller->create();
+        break;
+
+    case 'client_enregistrer':
+        require_once 'controllers/ClientController.php';
+        $controller = new ClientController($pdo);
+        $controller->store();
+        break;
+
+    case 'client_modifier':
+        require_once 'controllers/ClientController.php';
+        $controller = new ClientController($pdo);
+        $controller->edit();
+        break;
+
+    case 'client_mettre_a_jour':
+        require_once 'controllers/ClientController.php';
+        $controller = new ClientController($pdo);
+        $controller->update();
+        break;
+
+    case 'client_supprimer':
+        require_once 'controllers/ClientController.php';
+        $controller = new ClientController($pdo);
+        $controller->delete();
+        break;
+    
+    case 'banques':
+        require_once 'controllers/BanqueController.php';
+        $controller = new BanqueController($pdo);
+        $controller->index();
+        break;
+    case 'banque_creer':
+        require_once 'controllers/BanqueController.php';
+        $controller = new BanqueController($pdo);
+        $controller->create();
+        break;
+    case 'banque_enregistrer':
+        require_once 'controllers/BanqueController.php';
+        $controller = new BanqueController($pdo);
+        $controller->store();
+        break;
+    case 'banque_modifier':
+        require_once 'controllers/BanqueController.php';
+        $controller = new BanqueController($pdo);
+        $controller->edit();
+        break;
+    case 'banque_mettre_a_jour':
+        require_once 'controllers/BanqueController.php';
+        $controller = new BanqueController($pdo);
+        $controller->update();
+        break;
+    case 'banque_supprimer':
+        require_once 'controllers/BanqueController.php';
+        $controller = new BanqueController($pdo);
+        $controller->delete();
+        break;
+
+    case 'banque_versements':
+        require_once 'controllers/BanqueController.php';
+        $controller = new BanqueController($pdo);
+        $controller->versements();
+        break;
+    
+    case 'banque_mouvement_enregistrer':
+        require_once 'controllers/BanqueController.php';
+        $controller = new BanqueController($pdo);
+        $controller->storeMouvement();
+        break;
+    
+    case 'banque_mouvement_supprimer':
+        require_once 'controllers/BanqueController.php';
+        $controller = new BanqueController($pdo);
+        $controller->deleteMouvement();
+        break;
+
+    case 'ajax_produits_peres':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->getProduitsPeresAjax();
+        break;
+    
+    // ==========================================
+    // FIN MODULE 3
+    // ==========================================
+
     case 'dashboard':
     default:
         $title = "Tableau de bord";
