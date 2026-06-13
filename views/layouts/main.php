@@ -30,19 +30,27 @@ require_once __DIR__ . '/../components/autoload.php';
         <nav class="sidebar-nav">
             <?php
             $currentAction = $_GET['action'] ?? 'dashboard';
+            $currentController = $_GET['controller'] ?? ''; 
 
             echo renderSidebarSection('Navigation', [
                 ['label' => 'Dashboard', 'icon' => 'fa-tachometer-alt', 'href' => '?action=dashboard', 'active' => $currentAction === 'dashboard'],
             ]);
 
-            if (function_exists('checkRightIfLogged') && checkRightIfLogged('lister_produits')):
+           // MODULE 3 - GESTION DE LA STRUCTURE
+            if (function_exists('checkRightIfLogged') && checkRightIfLogged('lister_familles')):
             echo renderCollapsibleSection('Structure', [
-                ['label' => 'Produits',    'icon' => 'fa-tag',    'href' => '?action=produits',     'active' => $currentAction === 'produits'],
-                ['label' => 'Familles',    'icon' => 'fa-folder', 'href' => '?action=familles',     'active' => $currentAction === 'familles'],
+                ['label' => 'Familles',    'icon' => 'fa-folder', 'href' => '?action=familles', 'active' => $currentAction === 'familles'],
+                ['label' => 'Produits',    'icon' => 'fa-tag',    'href' => '?action=produits', 'active' => $currentAction === 'produits'],
                 ['label' => 'Fournisseurs','icon' => 'fa-truck',  'href' => '?action=fournisseurs', 'active' => $currentAction === 'fournisseurs'],
-                ['label' => 'Clients',     'icon' => 'fa-users',  'href' => '?action=clients',      'active' => $currentAction === 'clients'],
+                ['label' => 'Clients',     'icon' => 'fa-users',  'href' => '?action=clients', 'active' => $currentAction === 'clients'],
+                ['label' => 'Banques', 'icon' => 'fa-university', 'href' => '?action=banques', 'active' => $currentAction === 'banques'],
+                ['label' => 'État banque', 'icon' => 'fa-chart-line', 'href' => '?action=banque_versements', 'active' => $currentAction === 'banque_versements'],
+                ['label' => 'Corbeille', 'icon' => 'fa-trash-restore', 'href' => '?action=restauration', 'active' => $currentAction === 'restauration'],
             ], 'structure');
             endif;
+            // ==========================================
+            // FIN MODULE 3
+            // ==========================================
 
             if (function_exists('checkRightIfLogged') && checkRightIfLogged('creer_bcf')):
             echo renderCollapsibleSection('Approvisionnements', [
