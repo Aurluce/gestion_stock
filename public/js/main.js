@@ -481,11 +481,26 @@
     if (el) {
       e.preventDefault();
       var message = el.getAttribute('data-confirm') || 'Confirmez-vous cette action ?';
+      var confirmType = el.getAttribute('data-confirm-type') || 'danger';
       var confirmModal = document.getElementById('confirmModal');
       var confirmMsg = document.getElementById('confirmMessage');
       var confirmLink = document.getElementById('confirmLink');
+      var confirmIcon = document.getElementById('confirmModalIcon');
+      var linkIcon = document.getElementById('confirmLinkIcon');
+      var linkLabel = document.getElementById('confirmLinkLabel');
       if (!confirmModal || !confirmMsg || !confirmLink) return;
       confirmMsg.textContent = message;
+      // Style selon le type
+      var typeConfig = {
+        danger:  { icon: 'fa-exclamation-triangle', btnClass: 'btn-danger',  btnIcon: 'fa-trash', label: 'Supprimer' },
+        warning: { icon: 'fa-exclamation-circle',   btnClass: 'btn-warning', btnIcon: 'fa-ban',   label: 'Annuler' },
+        success: { icon: 'fa-check-circle',          btnClass: 'btn-success', btnIcon: 'fa-check', label: 'Valider' }
+      };
+      var cfg = typeConfig[confirmType] || typeConfig.danger;
+      if (confirmIcon) confirmIcon.className = 'fas ' + cfg.icon;
+      if (linkIcon) linkIcon.className = 'fas ' + cfg.btnIcon;
+      if (linkLabel) linkLabel.textContent = cfg.label;
+      confirmLink.className = cfg.btnClass;
       var href = el.getAttribute('href');
       if (href) {
         confirmTarget = { href: href, form: null };
@@ -545,6 +560,27 @@
   document.querySelectorAll('.sidebar-item').forEach(function (item) {
     if (item.classList.contains('active')) {
       item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  });
+
+  /* ============================
+     FILTER BAR toggle (mobile)
+     ============================ */
+  document.addEventListener('click', function (e) {
+    var toggle = e.target.closest('[data-filter-toggle]');
+    if (toggle) {
+      var filterId = toggle.getAttribute('data-filter-toggle');
+      var filterBar = document.getElementById(filterId);
+      if (filterBar) {
+        filterBar.classList.toggle('filter-bar-collapsed');
+        // Changer icône
+        var icon = toggle.querySelector('i');
+        if (icon) {
+          icon.classList.toggle('fa-sliders-h');
+          icon.classList.toggle('fa-times');
+        }
+      }
+      e.preventDefault();
     }
   });
 })();

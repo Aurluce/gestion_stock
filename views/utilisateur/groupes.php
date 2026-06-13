@@ -43,7 +43,8 @@ $actionsRenderer = function($row, $rowIndex) use ($groupes) {
     $actions .= renderButton('', 'icon-danger', '?action=groupes&delete=' . $g['id_groupe'], [
         'icon' => 'fa-trash',
         'title' => 'Supprimer',
-        'data-confirm' => 'Supprimer ce groupe ?'
+        'data-confirm' => 'Supprimer ce groupe ?',
+        'data-confirm-type' => 'danger'
     ]);
     return $actions;
 };

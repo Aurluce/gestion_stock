@@ -14,8 +14,8 @@ echo renderPageHeader('Détail de l\'élément', 'Contenu XML sauvegardé', rend
                 <span class="ml-2 text-sm text-neutral-50">ID original: <?= $element['id_objet'] ?></span>
             </div>
             <div class="flex gap-2">
-                <?= renderButton('Restaurer', 'success', '?action=restauration_restore&id=' . $element['id_corbeille'], ['icon' => 'fa-trash-restore', 'data-confirm' => 'Restaurer cet élément ?']) ?>
-                <?= renderButton('Supprimer définitivement', 'danger', '?action=restauration_delete&id=' . $element['id_corbeille'], ['icon' => 'fa-trash', 'data-confirm' => 'Supprimer définitivement ?']) ?>
+                <?= renderButton('Restaurer', 'success', '?action=restauration_restore&id=' . $element['id_corbeille'], ['icon' => 'fa-trash-restore', 'data-confirm' => 'Restaurer cet élément ?', 'data-confirm-type' => 'success']) ?>
+                <?= renderButton('Supprimer définitivement', 'danger', '?action=restauration_delete&id=' . $element['id_corbeille'], ['icon' => 'fa-trash', 'data-confirm' => 'Supprimer définitivement ?', 'data-confirm-type' => 'danger']) ?>
             </div>
         </div>
     </div>

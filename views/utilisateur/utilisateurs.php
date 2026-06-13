@@ -28,7 +28,8 @@ $actionsRenderer = function($row, $rowIndex) use ($users) {
     $actions .= renderButton('', 'icon-danger', '?action=utilisateurs&delete=' . $u['id_utilisateur'], [
         'icon' => 'fa-trash',
         'title' => 'Supprimer',
-        'data-confirm' => 'Supprimer cet utilisateur ?'
+        'data-confirm' => 'Supprimer cet utilisateur ?',
+        'data-confirm-type' => 'danger'
     ]);
     return $actions;
 };

@@ -76,7 +76,7 @@ echo renderPageHeader('Produits', 'Gérez votre catalogue de produits', $pageAct
                                         </td>
                                         <td class="text-center">
                                             <?= renderButton('', 'icon', '?action=produit_modifier&id=' . $p['id_produit'], ['icon' => 'fa-edit', 'title' => 'Modifier']) ?>
-                                            <?= renderButton('', 'icon-danger', '?action=produit_supprimer&id=' . $p['id_produit'], ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer ce produit ?']) ?>
+                                            <?= renderButton('', 'icon-danger', '?action=produit_supprimer&id=' . $p['id_produit'], ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer ce produit ?', 'data-confirm-type' => 'danger']) ?>
                                         </td>
                                     </tr>
                                     <?php endforeach; ?>
@@ -126,11 +126,11 @@ echo renderPageHeader('Produits', 'Gérez votre catalogue de produits', $pageAct
                                     <div class="flex justify-center gap-1">
                                         <?= renderButton('', 'icon', '?action=produit_modifier&id=' . $p['id_produit'], ['icon' => 'fa-edit', 'title' => 'Modifier']) ?>
                                         <?php if ($p['est_actif']): ?>
-                                            <?= renderButton('', 'icon', '?action=produit_desactiver&id=' . $p['id_produit'], ['icon' => 'fa-toggle-on', 'title' => 'Désactiver', 'data-confirm' => 'Désactiver ce produit ?']) ?>
+                                            <?= renderButton('', 'icon', '?action=produit_desactiver&id=' . $p['id_produit'], ['icon' => 'fa-toggle-on', 'title' => 'Désactiver', 'data-confirm' => 'Désactiver ce produit ?', 'data-confirm-type' => 'warning']) ?>
                                         <?php else: ?>
-                                            <?= renderButton('', 'icon', '?action=produit_activer&id=' . $p['id_produit'], ['icon' => 'fa-toggle-off', 'title' => 'Activer', 'data-confirm' => 'Activer ce produit ?']) ?>
+                                            <?= renderButton('', 'icon', '?action=produit_activer&id=' . $p['id_produit'], ['icon' => 'fa-toggle-off', 'title' => 'Activer', 'data-confirm' => 'Activer ce produit ?', 'data-confirm-type' => 'success'])?>
                                         <?php endif; ?>
-                                        <?= renderButton('', 'icon-danger', '?action=produit_supprimer&id=' . $p['id_produit'], ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer ce produit ?']) ?>
+                                        <?= renderButton('', 'icon-danger', '?action=produit_supprimer&id=' . $p['id_produit'], ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer ce produit ?', 'data-confirm-type' => 'danger']) ?>
                                     </div>
                                 </td>
                             </tr>

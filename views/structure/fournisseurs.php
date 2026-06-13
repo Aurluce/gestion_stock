@@ -49,11 +49,11 @@ echo renderPageHeader('Fournisseurs', 'Gérez les fournisseurs de l\'entreprise'
                                 <div class="flex justify-center gap-1">
                                     <?= renderButton('', 'icon', '?action=fournisseur_modifier&id=' . $f['id_fournisseur'], ['icon' => 'fa-edit', 'title' => 'Modifier']) ?>
                                     <?php if ($f['est_actif']): ?>
-                                        <?= renderButton('', 'icon', '?action=fournisseur_desactiver&id=' . $f['id_fournisseur'], ['icon' => 'fa-toggle-on', 'title' => 'Désactiver', 'data-confirm' => 'Désactiver ce fournisseur ?']) ?>
+                                        <?= renderButton('', 'icon', '?action=fournisseur_desactiver&id=' . $f['id_fournisseur'], ['icon' => 'fa-toggle-on', 'title' => 'Désactiver', 'data-confirm' => 'Désactiver ce fournisseur ?', 'data-confirm-type' => 'warning']) ?>
                                     <?php else: ?>
-                                        <?= renderButton('', 'icon', '?action=fournisseur_activer&id=' . $f['id_fournisseur'], ['icon' => 'fa-toggle-off', 'title' => 'Activer', 'data-confirm' => 'Activer ce fournisseur ?']) ?>
+                                        <?= renderButton('', 'icon', '?action=fournisseur_activer&id=' . $f['id_fournisseur'], ['icon' => 'fa-toggle-off', 'title' => 'Activer', 'data-confirm' => 'Activer ce fournisseur ?', 'data-confirm-type' => 'success']) ?>
                                     <?php endif; ?>
-                                    <?= renderButton('', 'icon-danger', '?action=fournisseur_supprimer&id=' . $f['id_fournisseur'], ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer ce fournisseur ?']) ?>
+                                    <?= renderButton('', 'icon-danger', '?action=fournisseur_supprimer&id=' . $f['id_fournisseur'], ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer ce fournisseur ?', 'data-confirm-type' => 'danger']) ?>
                                 </div>
                             </td>
                         </tr>

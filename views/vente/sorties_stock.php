@@ -13,30 +13,9 @@ ob_start();
     checkRightIfLogged('enregistrer_sortie_stock') ? renderButton('Nouvelle sortie', 'primary', null, ['icon' => 'fa-plus', 'data-modal-toggle' => 'createModal']) : null
 ) ?>
 
-<div class="card mb-6">
-    <div class="card-body">
-        <form method="get" action="?action=sortie_stock" class="flex flex-wrap gap-3 items-end">
-            <input type="hidden" name="action" value="sortie_stock">
-            <div class="min-w-[200px]">
-                <label class="form-label">Motif</label>
-                <select name="motif" class="form-select">
-                    <option value="">Tous les motifs</option>
-                    <?php
-                    $motifsFiltre = ['perime' => 'Périmé', 'non_vendu' => 'Non vendu', 'retour_client' => 'Retour client', 'casse' => 'Casse', 'don' => 'Don', 'autre' => 'Autre'];
-                    foreach ($motifsFiltre as $val => $label):
-                        $selected = (($_GET['motif'] ?? '') === $val) ? 'selected' : '';
-                    ?>
-                    <option value="<?= $val ?>" <?= $selected ?>><?= $label ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="flex gap-2">
-                <button type="submit" class="btn-primary"><i class="fas fa-filter mr-2"></i>Filtrer</button>
-                <a href="?action=sortie_stock" class="btn-secondary">Réinitialiser</a>
-            </div>
-        </form>
-    </div>
-</div>
+<?= renderFilterBar('sortie_stock', [
+    ['select', 'motif', 'Motif', ['perime' => 'Périmé', 'non_vendu' => 'Non vendu', 'retour_client' => 'Retour client', 'casse' => 'Casse', 'don' => 'Don', 'autre' => 'Autre']],
+]) ?>
 
 <?php
 $motifLabels = [

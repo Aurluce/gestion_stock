@@ -13,34 +13,10 @@ ob_start();
     checkRightIfLogged('creer_commande_client') ? renderButton('Nouvelle commande', 'primary', null, ['icon' => 'fa-plus', 'data-modal-toggle' => 'createModal']) : null
 ) ?>
 
-<div class="card mb-6">
-    <div class="card-body">
-        <form method="get" action="?action=commande_client" class="flex flex-wrap gap-3 items-end">
-            <input type="hidden" name="action" value="commande_client">
-            <div class="flex-1 min-w-[200px]">
-                <label class="form-label">Recherche (référence, client)</label>
-                <input type="text" name="search" class="form-input" placeholder="Ex: CC-2026 ou Mballa" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-            </div>
-            <div class="min-w-[180px]">
-                <label class="form-label">Statut</label>
-                <select name="statut" class="form-select">
-                    <option value="">Tous les statuts</option>
-                    <?php
-                    $statuts = ['en_attente' => 'En attente', 'en_cours' => 'En cours', 'livree' => 'Livrée', 'facturee' => 'Facturée', 'reglee' => 'Réglée', 'annulee' => 'Annulée'];
-                    foreach ($statuts as $val => $label):
-                        $selected = (($_GET['statut'] ?? '') === $val) ? 'selected' : '';
-                    ?>
-                    <option value="<?= $val ?>" <?= $selected ?>><?= $label ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="flex gap-2">
-                <button type="submit" class="btn-primary"><i class="fas fa-filter mr-2"></i>Filtrer</button>
-                <a href="?action=commande_client" class="btn-secondary">Réinitialiser</a>
-            </div>
-        </form>
-    </div>
-</div>
+<?= renderFilterBar('commande_client', [
+    ['search', 'search', 'Référence, client'],
+    ['select', 'statut', 'Statut', ['en_attente' => 'En attente', 'en_cours' => 'En cours', 'livree' => 'Livrée', 'facturee' => 'Facturée', 'reglee' => 'Réglée', 'annulee' => 'Annulée']],
+]) ?>
 
 <?php
 $statutBadges = [
@@ -74,14 +50,16 @@ $actionsRenderer = function($row, $rowIndex) use ($commandes) {
         $actions .= renderButton('', 'icon', '?action=commande_client&annuler=' . $cmd['id_cc'], [
             'icon' => 'fa-ban',
             'title' => 'Annuler',
-            'data-confirm' => 'Annuler cette commande ?'
+            'data-confirm' => 'Annuler cette commande ?',
+            'data-confirm-type' => 'warning'
         ]);
     }
     if (checkRightIfLogged('supprimer_commande_client') && $cmd['statut'] === 'en_cours') {
         $actions .= renderButton('', 'icon', '?action=commande_client&delete=' . $cmd['id_cc'], [
             'icon' => 'fa-trash',
             'title' => 'Supprimer',
-            'data-confirm' => 'Supprimer cette commande ?'
+            'data-confirm' => 'Supprimer cette commande ?',
+            'data-confirm-type' => 'danger'
         ]);
     }
     return $actions;
