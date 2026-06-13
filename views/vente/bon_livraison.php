@@ -35,7 +35,8 @@ $actionsRenderer = function($row, $rowIndex) use ($livraisons) {
         $actions .= renderButton('', 'icon', '?action=bon_livraison&annuler=' . $bl['id_bl'], [
             'icon' => 'fa-ban',
             'title' => 'Annuler',
-            'data-confirm' => 'Annuler cette livraison ?'
+            'data-confirm' => 'Annuler cette livraison ?',
+            'data-confirm-type' => 'warning'
         ]);
     }
     return $actions;

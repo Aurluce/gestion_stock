@@ -48,7 +48,8 @@ $actionsRenderer = function($row, $rowIndex) use ($reglements) {
         $actions .= renderButton('', 'icon', '?action=reglement_client&delete=' . $r['id_reglement'], [
             'icon' => 'fa-trash',
             'title' => 'Supprimer',
-            'data-confirm' => 'Supprimer ce règlement ? Le statut de la facture sera recalculé.'
+            'data-confirm' => 'Supprimer ce règlement ? Le statut de la facture sera recalculé.',
+            'data-confirm-type' => 'danger'
         ]);
     }
     return $actions;

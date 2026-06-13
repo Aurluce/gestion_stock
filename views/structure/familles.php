@@ -24,7 +24,8 @@ echo renderPageHeader('Familles', 'Gérez les catégories de produits', $pageAct
             renderButton('', 'icon-danger', '?action=famille_supprimer&id=' . $famille['id_famille'], [
                 'icon' => 'fa-trash', 
                 'title' => 'Supprimer',
-                'data-confirm' => 'Supprimer cette famille ?'
+                'data-confirm' => 'Supprimer cette famille ?',
+                'data-confirm-type' => 'danger'
             ])
         ];
     }, $familles);

@@ -50,7 +50,8 @@ echo renderPageHeader('Clients', 'Gérez vos clients', $pageActions);
                             <td class="text-center">
                                 <div class="flex justify-center gap-1">
                                     <?= renderButton('', 'icon', '?action=client_modifier&id=' . $c['id_client'], ['icon' => 'fa-edit', 'title' => 'Modifier']) ?>
-                                    <?= renderButton('', 'icon-danger', '?action=client_supprimer&id=' . $c['id_client'], ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer ce client ?']) ?>
+                                    <?= renderButton('', 'icon-danger', '?action=client_supprimer&id=' . $c['id_client'], ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer ce client ?',
+        'data-confirm-type' => 'danger']) ?>
                                 </div>
                             </td>
                         </tr>

@@ -26,17 +26,15 @@ foreach ($anneesDisponibles as $a) {
         . renderButton('Voir l\'état journalier', 'primary', '?action=etats_ventes&type=jour', ['icon' => 'fa-calendar-day'])
 ) ?>
 
-<div class="card mb-6">
-    <div class="card-body flex items-center gap-4">
-        <label class="form-label mb-0">Année :</label>
-        <form method="get" action="?action=etats_ventes" class="flex items-center gap-2">
-            <input type="hidden" name="type" value="annee">
-            <select name="annee" class="form-select" onchange="this.form.submit()" style="width: auto;">
-                <?= $anneeOptions ?>
-            </select>
-        </form>
-    </div>
-</div>
+<?php
+$anneesOpts = [];
+foreach ($anneesDisponibles as $a) {
+    $anneesOpts[$a] = (string)$a;
+}
+echo renderFilterBar('etats_ventes', [
+    ['select', 'annee', 'Année', $anneesOpts],
+]);
+?>
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
     <div class="card">

@@ -41,7 +41,8 @@ echo renderPageHeader('Banques', 'Gérez les comptes bancaires de l\'entreprise'
                                 <div class="flex justify-center gap-1">
                                     <?= renderButton('', 'icon', '?action=banque_versements&id_banque=' . $b['id_banque'], ['icon' => 'fa-chart-line', 'title' => 'Voir état des versements']) ?>
                                     <?= renderButton('', 'icon', '?action=banque_modifier&id=' . $b['id_banque'], ['icon' => 'fa-edit', 'title' => 'Modifier']) ?>
-                                    <?= renderButton('', 'icon-danger', '?action=banque_supprimer&id=' . $b['id_banque'], ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer cette banque ?']) ?>
+                                    <?= renderButton('', 'icon-danger', '?action=banque_supprimer&id=' . $b['id_banque'], ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer cette banque ?',
+            'data-confirm-type' => 'danger']) ?>
                                 </div>
                             </td>
                         </tr>

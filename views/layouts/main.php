@@ -33,7 +33,7 @@ require_once __DIR__ . '/../components/autoload.php';
             $currentController = $_GET['controller'] ?? ''; 
 
             echo renderSidebarSection('Navigation', [
-                ['label' => 'Dashboard', 'icon' => 'fa-tachometer-alt', 'href' => '?action=dashboard', 'active' => $currentAction === 'dashboard'],
+                ['label' => 'Tableau de bord', 'icon' => 'fa-tachometer-alt', 'href' => '?action=dashboard', 'active' => $currentAction === 'dashboard'],
             ]);
 
            // MODULE 3 - GESTION DE LA STRUCTURE
@@ -52,17 +52,21 @@ require_once __DIR__ . '/../components/autoload.php';
             // FIN MODULE 3
             // ==========================================
 
-            if (function_exists('checkRightIfLogged') && checkRightIfLogged('creer_bcf')):
+            if (function_exists('checkRightIfLogged') && checkRightIfLogged('lister_bcf')):
             echo renderCollapsibleSection('Approvisionnements', [
                 ['label' => 'Commandes fourn.', 'icon' => 'fa-file-invoice',     'href' => '?action=commande_fourn', 'active' => str_starts_with($currentAction, 'commande_fourn')],
+                ['label' => 'Réceptions',        'icon' => 'fa-truck-loading',   'href' => '?action=reception',      'active' => $currentAction === 'reception'],
+                ['label' => 'Bons d\'entrée',    'icon' => 'fa-arrow-right',     'href' => '?action=bon_entree',     'active' => $currentAction === 'bon_entree'],
+                ['label' => 'Dons',              'icon' => 'fa-gift',            'href' => '?action=don',            'active' => $currentAction === 'don'],
                 ['label' => 'Factures fourn.',   'icon' => 'fa-receipt',         'href' => '?action=facture_fourn',  'active' => str_starts_with($currentAction, 'facture_fourn')],
+                ['label' => 'Paiements fourn.',  'icon' => 'fa-money-bill-wave', 'href' => '?action=paiement_fourn',  'active' => $currentAction === 'paiement_fourn'],
                 ['label' => 'États achats',      'icon' => 'fa-chart-line',      'href' => '?action=etats_achats',    'active' => $currentAction === 'etats_achats'],
             ], 'approvisionnements');
             endif;
 
             if (function_exists('checkRightIfLogged') && checkRightIfLogged('creer_commande_client')):
             echo renderCollapsibleSection('Ventes', [
-                ['label' => 'Dashboard','icon' => 'fa-tachometer-alt',      'href' => '?action=dashboard_ventes', 'active' => $currentAction === 'dashboard_ventes'],
+                ['label' => 'Tableau de bord des ventes','icon' => 'fa-tachometer-alt',      'href' => '?action=dashboard_ventes', 'active' => $currentAction === 'dashboard_ventes'],
                 ['label' => 'Commandes clients','icon' => 'fa-shopping-cart',      'href' => '?action=commande_client', 'active' => str_starts_with($currentAction, 'commande_client')],
                 ['label' => 'Bons de livraison','icon' => 'fa-truck',      'href' => '?action=bon_livraison', 'active' => str_starts_with($currentAction, 'bon_livraison')],
                 ['label' => 'Factures clients',  'icon' => 'fa-file-invoice-dollar','href' => '?action=facture_client',  'active' => str_starts_with($currentAction, 'facture_client')],
@@ -152,15 +156,15 @@ require_once __DIR__ . '/../components/autoload.php';
             </div>
             <div class="modal-body text-center py-6">
                 <div class="text-h2 text-neutral-70 mb-4">
-                    <i class="fas fa-exclamation-triangle"></i>
+                    <i id="confirmModalIcon" class="fas fa-exclamation-triangle"></i>
                 </div>
                 <p class="text-body text-neutral-30" id="confirmMessage">Êtes-vous sûr ?</p>
             </div>
             <div class="modal-footer justify-center gap-3">
                 <button type="button" class="btn-secondary" data-modal-close>Annuler</button>
                 <a href="#" id="confirmLink" class="btn-danger">
-                    <i class="fas fa-trash"></i>
-                    <span>Confirmer</span>
+                    <i id="confirmLinkIcon" class="fas fa-trash"></i>
+                    <span id="confirmLinkLabel">Confirmer</span>
                 </a>
             </div>
         </div>

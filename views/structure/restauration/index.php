@@ -1,6 +1,6 @@
 <?php
 $title = "Corbeille - Restauration";
-$pageActions = renderButton('Vider la corbeille', 'danger', '?action=restauration_clear', ['icon' => 'fa-trash', 'data-confirm' => 'Vider définitivement la corbeille ? Cette action est irréversible.']);
+$pageActions = renderButton('Vider la corbeille', 'danger', '?action=restauration_clear', ['icon' => 'fa-trash', 'data-confirm' => 'Vider définitivement la corbeille ? Cette action est irréversible.', 'data-confirm-type' => 'danger']);
 echo renderPageHeader('Corbeille', 'Éléments supprimés et sauvegardés en XML', $pageActions);
 ?>
 
@@ -78,8 +78,8 @@ echo renderPageHeader('Corbeille', 'Éléments supprimés et sauvegardés en XML
                             <td class="text-center">
                                 <div class="flex justify-center gap-1">
                                     <?= renderButton('', 'icon', '?action=restauration_view&id=' . $e['id_corbeille'], ['icon' => 'fa-eye', 'title' => 'Voir le détail']) ?>
-                                    <?= renderButton('', 'icon', '?action=restauration_restore&id=' . $e['id_corbeille'], ['icon' => 'fa-trash-restore', 'title' => 'Restaurer', 'data-confirm' => 'Restaurer cet élément ?']) ?>
-                                    <?= renderButton('', 'icon-danger', '?action=restauration_delete&id=' . $e['id_corbeille'], ['icon' => 'fa-trash', 'title' => 'Supprimer définitivement', 'data-confirm' => 'Supprimer définitivement ?']) ?>
+                                    <?= renderButton('', 'icon', '?action=restauration_restore&id=' . $e['id_corbeille'], ['icon' => 'fa-trash-restore', 'title' => 'Restaurer', 'data-confirm' => 'Restaurer cet élément ?', 'data-confirm-type' => 'success']) ?>
+                                    <?= renderButton('', 'icon-danger', '?action=restauration_delete&id=' . $e['id_corbeille'], ['icon' => 'fa-trash', 'title' => 'Supprimer définitivement', 'data-confirm' => 'Supprimer définitivement ?', 'data-confirm-type' => 'danger']) ?>
                                 </div>
                             </td>
                         </tr>

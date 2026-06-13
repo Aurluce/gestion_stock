@@ -121,7 +121,8 @@ echo renderPageHeader('État des versements bancaires', 'Consultez les mouvement
                                 <td class="text-left"><?= htmlspecialchars($m['description'] ?? '-') ?></td>
                                 <td class="text-left text-sm text-neutral-50"><?= htmlspecialchars($m['utilisateur_nom'] ?? 'Système') ?></td>
                                 <td class="text-center">
-                                    <?= renderButton('', 'icon-danger', '?action=banque_mouvement_supprimer&id=' . $m['id_mouvement_banque'] . '&id_banque=' . $idBanque, ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer ce mouvement ?']) ?>
+                                    <?= renderButton('', 'icon-danger', '?action=banque_mouvement_supprimer&id=' . $m['id_mouvement_banque'] . '&id_banque=' . $idBanque, ['icon' => 'fa-trash', 'title' => 'Supprimer', 'data-confirm' => 'Supprimer ce mouvement ?',
+            'data-confirm-type' => 'danger']) ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>

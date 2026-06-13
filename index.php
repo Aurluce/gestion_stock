@@ -87,6 +87,49 @@ switch ($action) {
         break;
 
     // ==========================================
+    // MODULE 4 - APPROVISIONNEMENTS
+    // ==========================================
+
+    case 'commande_fourn':
+        require_once 'controllers/ApprovisionnementController.php';
+        (new ApprovisionnementController($pdo))->commandeFourn();
+        break;
+
+    case 'reception':
+        require_once 'controllers/ApprovisionnementController.php';
+        (new ApprovisionnementController($pdo))->reception();
+        break;
+
+    case 'don':
+        require_once 'controllers/ApprovisionnementController.php';
+        (new ApprovisionnementController($pdo))->don();
+        break;
+
+    case 'bon_entree':
+        require_once 'controllers/ApprovisionnementController.php';
+        (new ApprovisionnementController($pdo))->bonEntree();
+        break;
+
+    case 'facture_fourn':
+        require_once 'controllers/ApprovisionnementController.php';
+        (new ApprovisionnementController($pdo))->factureFourn();
+        break;
+
+    case 'paiement_fourn':
+        require_once 'controllers/ApprovisionnementController.php';
+        (new ApprovisionnementController($pdo))->paiementFourn();
+        break;
+
+    case 'etats_achats':
+        require_once 'controllers/ApprovisionnementController.php';
+        (new ApprovisionnementController($pdo))->etatsAchats();
+        break;
+
+    // ==========================================
+    // FIN MODULE 4
+    // ==========================================
+
+    // ==========================================
     // MODULE 3 - GESTION DE LA STRUCTURE
     // ==========================================
     

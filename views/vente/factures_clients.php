@@ -13,30 +13,9 @@ ob_start();
     checkRightIfLogged('creer_facture_client') ? renderButton('Nouvelle facture', 'primary', null, ['icon' => 'fa-plus', 'data-modal-toggle' => 'createModal']) : null
 ) ?>
 
-<div class="card mb-6">
-    <div class="card-body">
-        <form method="get" action="?action=facture_client" class="flex flex-wrap gap-3 items-end">
-            <input type="hidden" name="action" value="facture_client">
-            <div class="min-w-[200px]">
-                <label class="form-label">Statut</label>
-                <select name="statut" class="form-select">
-                    <option value="">Tous les statuts</option>
-                    <?php
-                    $statutsF = ['impayee' => 'Impayée', 'partielle' => 'Partielle', 'payee' => 'Payée', 'annulee' => 'Annulée'];
-                    foreach ($statutsF as $val => $label):
-                        $selected = (($_GET['statut'] ?? '') === $val) ? 'selected' : '';
-                    ?>
-                    <option value="<?= $val ?>" <?= $selected ?>><?= $label ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="flex gap-2">
-                <button type="submit" class="btn-primary"><i class="fas fa-filter mr-2"></i>Filtrer</button>
-                <a href="?action=facture_client" class="btn-secondary">Réinitialiser</a>
-            </div>
-        </form>
-    </div>
-</div>
+<?= renderFilterBar('facture_client', [
+    ['select', 'statut', 'Statut', ['impayee' => 'Impayée', 'partielle' => 'Partielle', 'payee' => 'Payée', 'annulee' => 'Annulée']],
+]) ?>
 
 <?php
 $statutBadges = [
@@ -66,7 +45,8 @@ $actionsRenderer = function($row, $rowIndex) use ($factures) {
         $actions .= renderButton('', 'icon', '?action=facture_client&annuler=' . $f['id_facture'], [
             'icon' => 'fa-ban',
             'title' => 'Annuler',
-            'data-confirm' => 'Annuler cette facture ?'
+            'data-confirm' => 'Annuler cette facture ?',
+            'data-confirm-type' => 'warning'
         ]);
     }
     return $actions;
