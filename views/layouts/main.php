@@ -54,8 +54,13 @@ require_once __DIR__ . '/../components/autoload.php';
 
             if (function_exists('checkRightIfLogged') && checkRightIfLogged('creer_commande_client')):
             echo renderCollapsibleSection('Ventes', [
+                ['label' => 'Dashboard','icon' => 'fa-tachometer-alt',      'href' => '?action=dashboard_ventes', 'active' => $currentAction === 'dashboard_ventes'],
                 ['label' => 'Commandes clients','icon' => 'fa-shopping-cart',      'href' => '?action=commande_client', 'active' => str_starts_with($currentAction, 'commande_client')],
+                ['label' => 'Bons de livraison','icon' => 'fa-truck',      'href' => '?action=bon_livraison', 'active' => str_starts_with($currentAction, 'bon_livraison')],
                 ['label' => 'Factures clients',  'icon' => 'fa-file-invoice-dollar','href' => '?action=facture_client',  'active' => str_starts_with($currentAction, 'facture_client')],
+                ['label' => 'Règlements clients','icon' => 'fa-money-bill-wave',      'href' => '?action=reglement_client', 'active' => str_starts_with($currentAction, 'reglement_client')],
+                ['label' => 'Sorties de stock','icon' => 'fa-dolly-flatbed',      'href' => '?action=sortie_stock', 'active' => str_starts_with($currentAction, 'sortie_stock')],
+                ['label' => 'Vente au comptant','icon' => 'fa-cash-register',      'href' => '?action=vente_comptant', 'active' => str_starts_with($currentAction, 'vente_comptant')],
                 ['label' => 'États ventes',      'icon' => 'fa-chart-bar',         'href' => '?action=etats_ventes',     'active' => $currentAction === 'etats_ventes'],
             ], 'ventes');
             endif;

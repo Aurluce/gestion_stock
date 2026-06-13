@@ -48,6 +48,39 @@ switch ($action) {
         require_once 'controllers/UtilisateurController.php';
         (new UtilisateurController($pdo))->profil();
         break;
+    case 'commande_client':
+        require_once 'controllers/VenteController.php';
+        (new VenteController($pdo))->commandeClient();
+        break;
+    case 'bon_livraison':
+        require_once 'controllers/VenteController.php';
+        (new VenteController($pdo))->bonLivraison();
+        break;
+    case 'facture_client':
+        require_once 'controllers/VenteController.php';
+        (new VenteController($pdo))->factureClient();
+        break;
+    case 'reglement_client':
+        require_once 'controllers/VenteController.php';
+        (new VenteController($pdo))->reglementClient();
+        break;
+    case 'sortie_stock':
+        require_once 'controllers/VenteController.php';
+        (new VenteController($pdo))->sortieStock();
+        break;
+    case 'vente_comptant':
+        require_once 'controllers/VenteController.php';
+        (new VenteController($pdo))->venteComptant();
+        break;
+    case 'etats_ventes':
+        require_once 'controllers/VenteController.php';
+        (new VenteController($pdo))->etatsVentes();
+        break;
+    case 'dashboard_ventes':
+        require_once 'controllers/VenteController.php';
+        (new VenteController($pdo))->dashboardVentes();
+        break;
+
     case 'journal_audit':
         require_once 'controllers/UtilisateurController.php';
         (new UtilisateurController($pdo))->journalAudit();
