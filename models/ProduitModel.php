@@ -18,17 +18,25 @@ class ProduitModel {
     }
     
     public function getById(int $id): ?array {
-        $stmt = $this->pdo->prepare("SELECT * FROM structure.produit WHERE id_produit = ?");
+        $stmt = $this->pdo->prepare("
+            SELECT p.*, f.nom_famille, pp.nom_produit as nom_produit_pere
+            FROM structure.produit p
+            LEFT JOIN structure.famille f ON p.id_famille = f.id_famille
+            LEFT JOIN structure.produit pp ON p.id_produit_pere = pp.id_produit
+            WHERE p.id_produit = ?
+        ");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
     
     public function getByFamille(int $idFamille): array {
         $stmt = $this->pdo->prepare("
-            SELECT id_produit, nom_produit, prix_vente, stock_actuel, est_actif 
-            FROM structure.produit 
-            WHERE id_famille = ? 
-            ORDER BY nom_produit
+            SELECT p.id_produit, p.nom_produit, p.prix_vente, p.stock_actuel, p.est_actif,
+                   pp.nom_produit as nom_produit_pere
+            FROM structure.produit p
+            LEFT JOIN structure.produit pp ON p.id_produit_pere = pp.id_produit
+            WHERE p.id_famille = ? 
+            ORDER BY p.nom_produit
         ");
         $stmt->execute([$idFamille]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -63,11 +71,8 @@ class ProduitModel {
     }
     
     public function create(array $data): int {
-        // Convertir les valeurs boolean en string
         $perissableVal = $data['perissable'] ? 'true' : 'false';
         $estActifVal = $data['est_actif'] ? 'true' : 'false';
-        
-        // Gérer la date de péremption
         $datePeremption = !empty($data['date_peremption']) ? $data['date_peremption'] : null;
         
         $stmt = $this->pdo->prepare("
@@ -97,11 +102,8 @@ class ProduitModel {
     }
     
     public function update(int $id, array $data): bool {
-        // Convertir les valeurs boolean en string
         $perissableVal = $data['perissable'] ? 'true' : 'false';
         $estActifVal = $data['est_actif'] ? 'true' : 'false';
-        
-        // Gérer la date de péremption
         $datePeremption = !empty($data['date_peremption']) ? $data['date_peremption'] : null;
         
         $stmt = $this->pdo->prepare("

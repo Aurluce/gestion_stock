@@ -45,7 +45,7 @@ require_once __DIR__ . '/../components/autoload.php';
                 ['label' => 'Clients',     'icon' => 'fa-users',  'href' => '?action=clients', 'active' => $currentAction === 'clients'],
                 ['label' => 'Banques', 'icon' => 'fa-university', 'href' => '?action=banques', 'active' => $currentAction === 'banques'],
                 ['label' => 'État banque', 'icon' => 'fa-chart-line', 'href' => '?action=banque_versements', 'active' => $currentAction === 'banque_versements'],
-                ['label' => 'Restauration', 'icon' => 'fa-trash-restore', 'href' => '?action=restauration', 'active' => $currentAction === 'restauration'],
+                ['label' => 'Corbeille', 'icon' => 'fa-trash-restore', 'href' => '?action=restauration', 'active' => $currentAction === 'restauration'],
             ], 'structure');
             endif;
             // ==========================================

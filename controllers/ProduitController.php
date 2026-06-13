@@ -42,6 +42,7 @@ class ProduitController {
     public function create(): void {
         checkRight('creer_produit');
         $familles = $this->familleModel->getForSelect();
+        $produitsPeres = []; // Tableau vide pour la création
         ob_start();
         require __DIR__ . '/../views/structure/produit_form.php';
         $content = ob_get_clean();
@@ -152,7 +153,6 @@ class ProduitController {
         exit;
     }
     
-    // Désactiver un produit
     public function disable(): void {
         checkRight('modifier_produit');
         $id = (int)($_GET['id'] ?? 0);
@@ -162,7 +162,6 @@ class ProduitController {
         exit;
     }
     
-    // Activer un produit
     public function enable(): void {
         checkRight('modifier_produit');
         $id = (int)($_GET['id'] ?? 0);

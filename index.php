@@ -279,6 +279,36 @@ switch ($action) {
         $controller = new ProduitController($pdo);
         $controller->getProduitsPeresAjax();
         break;
+
+    case 'restauration':
+        require_once 'controllers/RestaurationController.php';
+        $controller = new RestaurationController($pdo);
+        $controller->index();
+        break;
+    
+    case 'restauration_view':
+        require_once 'controllers/RestaurationController.php';
+        $controller = new RestaurationController($pdo);
+        $controller->view();
+        break;
+    
+    case 'restauration_restore':
+        require_once 'controllers/RestaurationController.php';
+        $controller = new RestaurationController($pdo);
+        $controller->restore();
+        break;
+    
+    case 'restauration_delete':
+        require_once 'controllers/RestaurationController.php';
+        $controller = new RestaurationController($pdo);
+        $controller->delete();
+        break;
+    
+    case 'restauration_clear':
+        require_once 'controllers/RestaurationController.php';
+        $controller = new RestaurationController($pdo);
+        $controller->clear();
+        break;
     
     // ==========================================
     // FIN MODULE 3
