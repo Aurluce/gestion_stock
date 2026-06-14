@@ -6,14 +6,61 @@ echo renderPageHeader('Corbeille', 'Éléments supprimés et sauvegardés en XML
 
 <?= renderFlashAlerts() ?>
 
+<?php
+function parseRestorationXml(string $xmlString): array
+{
+    $xmlString = trim($xmlString);
+    if ($xmlString === '') {
+        return [];
+    }
+
+    if (preg_match('/^<([a-zA-Z0-9_:-]+)>(.*)<\/\1>$/s', $xmlString, $rootMatch)) {
+        $xmlString = trim($rootMatch[2]);
+    }
+
+    $result = [];
+    $pattern = '/<([a-zA-Z0-9_:-]+)>(.*?)<\/\1>/s';
+    if (preg_match_all($pattern, $xmlString, $matches, PREG_SET_ORDER)) {
+        foreach ($matches as $match) {
+            $tag = $match[1];
+            $content = trim($match[2]);
+            if (preg_match('/<([a-zA-Z0-9_:-]+)>/s', $content)) {
+                $value = parseRestorationXml($content);
+            } else {
+                $value = $content;
+            }
+
+            if (array_key_exists($tag, $result)) {
+                if (!is_array($result[$tag]) || array_keys($result[$tag]) === range(0, count($result[$tag]) - 1)) {
+                    $result[$tag] = [$result[$tag]];
+                }
+                $result[$tag][] = $value;
+            } else {
+                $result[$tag] = $value;
+            }
+        }
+    }
+
+    if (preg_match_all('/<([a-zA-Z0-9_:-]+)\s*\/\>/', $xmlString, $selfClosingMatches)) {
+        foreach ($selfClosingMatches[1] as $tag) {
+            if (!array_key_exists($tag, $result)) {
+                $result[$tag] = '';
+            }
+        }
+    }
+
+    return $result;
+}
+?>
+
 <!-- Filtres -->
 <div class="card mb-6">
     <div class="card-body">
-        <form method="GET" action="" class="form-grid">
+        <form method="GET" action="" class="form-grid gap-4">
             <input type="hidden" name="action" value="restauration">
             
             <div class="form-group">
-                <?= renderSelect('type', 'Type d\'objet', array_combine($types, $types), $typeFiltre ?? '', null, ['onchange' => 'this.form.submit()']) ?>
+                <?= renderSelect('type', 'Type d\'objet', !empty($types) ? array_combine($types, $types) : [], $typeFiltre ?? '', null, ['onchange' => 'this.form.submit()']) ?>
             </div>
             
             <div class="form-group">
@@ -62,12 +109,10 @@ echo renderPageHeader('Corbeille', 'Éléments supprimés et sauvegardés en XML
                             </td>
                             <td class="text-left">
                                 <?php
-                                $xml = @simplexml_load_string($e['donnees_xml']);
+                                $data = parseRestorationXml($e['donnees_xml']);
                                 $nom = '';
-                                if ($xml) {
-                                    if (isset($xml->nom)) $nom = (string)$xml->nom;
-                                    elseif (isset($xml->nom_produit)) $nom = (string)$xml->nom_produit;
-                                    elseif (isset($xml->reference)) $nom = (string)$xml->reference;
+                                if (!empty($data)) {
+                                    $nom = $data['nom'] ?? $data['nom_produit'] ?? $data['reference'] ?? '';
                                 }
                                 echo htmlspecialchars($nom ?: '-');
                                 ?>
