@@ -8,7 +8,7 @@ class FournisseurModel {
     
     public function getAll(): array {
         $stmt = $this->pdo->query("
-            SELECT id_fournisseur, nom, adresse, ville, code_postal, pays, tel, email, nif, est_actif,
+            SELECT id_fournisseur, nom, adresse, ville, tel, email, nif, est_actif,
                    TO_CHAR(date_creation, 'DD/MM/YYYY') as date_creation_fr
             FROM structure.fournisseur
             ORDER BY nom
@@ -23,8 +23,6 @@ class FournisseurModel {
     }
     
     public function create(array $data): int {
-        $estActifVal = $data['est_actif'] ? 'true' : 'false';
-        
         $stmt = $this->pdo->prepare("
             INSERT INTO structure.fournisseur (nom, tel, email, adresse, ville, nif, est_actif) 
             VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -37,14 +35,12 @@ class FournisseurModel {
             $data['adresse'] ?? null,
             $data['ville'] ?? null,
             $data['nif'] ?? null,
-            $estActifVal
+            isset($data['est_actif']) ? true : false
         ]);
         return (int)$this->pdo->lastInsertId();
     }
     
     public function update(int $id, array $data): bool {
-        $estActifVal = $data['est_actif'] ? 'true' : 'false';
-        
         $stmt = $this->pdo->prepare("
             UPDATE structure.fournisseur SET 
                 nom = ?,
@@ -65,7 +61,7 @@ class FournisseurModel {
             $data['adresse'] ?? null,
             $data['ville'] ?? null,
             $data['nif'] ?? null,
-            $estActifVal,
+            isset($data['est_actif']) ? true : false,
             $id
         ]);
     }
