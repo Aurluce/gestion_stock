@@ -8,8 +8,8 @@ class ClientModel {
     
     public function getAll(): array {
         $stmt = $this->pdo->query("
-            SELECT c.id_client, c.nom, c.prenom, c.tel, c.email, c.ville, c.type_client, 
-                   c.solde_credit, c.est_actif, cat.nom_categorie
+            SELECT c.id_client, c.nom, c.prenom, c.tel, c.email, c.ville, 
+                   c.solde_credit, c.est_actif, cat.nom_categorie, cat.taux_remise
             FROM structure.client c
             LEFT JOIN structure.categorie_client cat ON c.id_categorie_client = cat.id_categorie_client
             ORDER BY c.nom
@@ -19,7 +19,7 @@ class ClientModel {
     
     public function getById(int $id): ?array {
         $stmt = $this->pdo->prepare("
-            SELECT c.*, cat.nom_categorie 
+            SELECT c.*, cat.nom_categorie, cat.taux_remise
             FROM structure.client c
             LEFT JOIN structure.categorie_client cat ON c.id_categorie_client = cat.id_categorie_client
             WHERE c.id_client = ?
@@ -33,8 +33,8 @@ class ClientModel {
         
         $stmt = $this->pdo->prepare("
             INSERT INTO structure.client 
-            (id_categorie_client, nom, prenom, tel, email, ville, type_client, est_actif) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            (id_categorie_client, nom, prenom, tel, email, ville, est_actif) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         
         $stmt->execute([
@@ -44,7 +44,6 @@ class ClientModel {
             $data['tel'] ?? null,
             $data['email'] ?? null,
             $data['ville'] ?? null,
-            $data['type_client'] ?? 'particulier',
             isset($data['est_actif']) ? true : false
         ]);
         return (int)$this->pdo->lastInsertId();
@@ -61,7 +60,6 @@ class ClientModel {
                 tel = ?,
                 email = ?,
                 ville = ?,
-                type_client = ?,
                 est_actif = ?,
                 date_modif = CURRENT_TIMESTAMP
             WHERE id_client = ?
@@ -74,7 +72,6 @@ class ClientModel {
             $data['tel'] ?? null,
             $data['email'] ?? null,
             $data['ville'] ?? null,
-            $data['type_client'] ?? 'particulier',
             isset($data['est_actif']) ? true : false,
             $id
         ]);

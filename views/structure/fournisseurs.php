@@ -28,23 +28,16 @@ $actionsRenderer = function($row, $rowIndex) use ($fournisseurs) {
     ]);
     
     if ($f['est_actif']) {
-        $actions .= renderButton('', 'icon', '?action=fournisseurs&disable=' . $f['id_fournisseur'], [
-            'icon' => 'fa-toggle-on',
-            'title' => 'Désactiver',
-            'data-confirm' => 'Désactiver ce fournisseur ?'
-        ]);
+        $actions .= '<button type="button" class="btn-icon" onclick="openDisableModal(' . $f['id_fournisseur'] . ')" title="Désactiver"><i class="fas fa-toggle-on"></i></button>';
     } else {
-        $actions .= renderButton('', 'icon', '?action=fournisseurs&enable=' . $f['id_fournisseur'], [
-            'icon' => 'fa-toggle-off',
-            'title' => 'Activer',
-            'data-confirm' => 'Activer ce fournisseur ?'
-        ]);
+        $actions .= '<button type="button" class="btn-icon" onclick="openEnableModal(' . $f['id_fournisseur'] . ')" title="Activer"><i class="fas fa-toggle-off"></i></button>';
     }
     
+    // Suppression avec modal standard du Design System
     $actions .= renderButton('', 'icon-danger', '?action=fournisseurs&delete=' . $f['id_fournisseur'], [
         'icon' => 'fa-trash',
         'title' => 'Supprimer',
-        'data-confirm' => 'Supprimer ce fournisseur ?'
+        'data-confirm' => 'Supprimer définitivement ce fournisseur ?'
     ]);
     return $actions;
 };
@@ -76,7 +69,45 @@ echo renderResponsiveTable(
 );
 ?>
 
-<!-- Modal création -->
+<!-- Modal désactivation -->
+<?php
+$disableBody = '
+<div class="text-center py-4">
+    <div class="text-h2 text-neutral-70 mb-4">
+        <i class="fas fa-toggle-off text-warning-500"></i>
+    </div>
+    <p class="text-body text-neutral-30">Êtes-vous sûr de vouloir désactiver ce fournisseur ?</p>
+    <p class="text-caption text-neutral-50 mt-2">Le fournisseur ne sera plus disponible dans les listes déroulantes.</p>
+</div>';
+
+$disableFooter = '
+    <button type="button" class="btn-secondary" onclick="closeDisableModal()">Annuler</button>
+    <a href="#" id="disableLink" class="btn-warning">Désactiver</a>
+';
+
+echo renderModal('disableModal', 'Confirmation de désactivation', $disableBody, $disableFooter);
+?>
+
+<!-- Modal activation -->
+<?php
+$enableBody = '
+<div class="text-center py-4">
+    <div class="text-h2 text-neutral-70 mb-4">
+        <i class="fas fa-toggle-on text-success-500"></i>
+    </div>
+    <p class="text-body text-neutral-30">Êtes-vous sûr de vouloir activer ce fournisseur ?</p>
+    <p class="text-caption text-neutral-50 mt-2">Le fournisseur sera à nouveau disponible dans les listes déroulantes.</p>
+</div>';
+
+$enableFooter = '
+    <button type="button" class="btn-secondary" onclick="closeEnableModal()">Annuler</button>
+    <a href="#" id="enableLink" class="btn-success">Activer</a>
+';
+
+echo renderModal('enableModal', 'Confirmation d\'activation', $enableBody, $enableFooter);
+?>
+
+<!-- Modals création et modification -->
 <?php
 $createBody = '
 <form method="post" action="?action=fournisseurs" class="space-y-4">
@@ -102,7 +133,6 @@ $createBody = '
 echo renderModal('createModal', 'Ajouter un fournisseur', $createBody);
 ?>
 
-<!-- Modal modification -->
 <?php
 $editBody = '
 <form method="post" action="?action=fournisseurs">
@@ -143,6 +173,22 @@ document.querySelectorAll('[data-edit-fournisseur]').forEach(btn => {
         document.getElementById('edit_est_actif').checked = data.est_actif;
     });
 });
+
+function openDisableModal(id) {
+    document.getElementById('disableLink').href = '?action=fournisseurs&disable=' + id;
+    document.getElementById('disableModal').classList.remove('hidden');
+}
+function closeDisableModal() {
+    document.getElementById('disableModal').classList.add('hidden');
+}
+
+function openEnableModal(id) {
+    document.getElementById('enableLink').href = '?action=fournisseurs&enable=' + id;
+    document.getElementById('enableModal').classList.remove('hidden');
+}
+function closeEnableModal() {
+    document.getElementById('enableModal').classList.add('hidden');
+}
 </script>
 
 <?php

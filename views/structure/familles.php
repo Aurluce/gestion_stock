@@ -27,7 +27,11 @@ $actionsRenderer = function($row, $rowIndex) use ($familles) {
     ]), ENT_QUOTES, 'UTF-8');
     
     $actions = '<button type="button" class="btn-icon" data-modal-toggle="editModal" data-edit-famille=\'' . $editData . '\' title="Modifier"><i class="fas fa-edit"></i></button>';
-    $actions .= '<a href="?action=familles&delete=' . $f['id_famille'] . '" class="btn-icon-danger" onclick="return confirm(\'Supprimer cette famille ?\')" title="Supprimer"><i class="fas fa-trash-alt"></i></a>';
+    $actions .= renderButton('', 'icon-danger', '?action=familles&delete=' . $f['id_famille'], [
+        'icon' => 'fa-trash',
+        'title' => 'Supprimer',
+        'data-confirm' => 'Supprimer cette famille ?'
+    ]);
     return $actions;
 };
 

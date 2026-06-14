@@ -42,6 +42,7 @@ require_once __DIR__ . '/../components/autoload.php';
                 ['label' => 'Familles',    'icon' => 'fa-folder', 'href' => '?action=familles', 'active' => $currentAction === 'familles'],
                 ['label' => 'Produits',    'icon' => 'fa-tag',    'href' => '?action=produits', 'active' => $currentAction === 'produits'],
                 ['label' => 'Fournisseurs','icon' => 'fa-truck',  'href' => '?action=fournisseurs', 'active' => $currentAction === 'fournisseurs'],
+                ['label' => 'Catégories clients', 'icon' => 'fa-tags', 'href' => '?action=categories_client', 'active' => $currentAction === 'categories_client'],
                 ['label' => 'Clients',     'icon' => 'fa-users',  'href' => '?action=clients', 'active' => $currentAction === 'clients'],
                 ['label' => 'Banques', 'icon' => 'fa-university', 'href' => '?action=banques', 'active' => $currentAction === 'banques'],
                 ['label' => 'État banque', 'icon' => 'fa-chart-line', 'href' => '?action=banque_versements', 'active' => $currentAction === 'banque_versements'],

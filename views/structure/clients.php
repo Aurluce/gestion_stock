@@ -26,33 +26,28 @@ $actionsRenderer = function($row, $rowIndex) use ($clients) {
         'data-modal-toggle' => 'editModal',
         'data-edit-client' => json_encode($c)
     ]);
+    // Suppression avec modal standard du Design System
     $actions .= renderButton('', 'icon-danger', '?action=clients&delete=' . $c['id_client'], [
         'icon' => 'fa-trash',
         'title' => 'Supprimer',
-        'data-confirm' => 'Supprimer ce client ?'
+        'data-confirm' => 'Supprimer définitivement ce client ?'
     ]);
     return $actions;
 };
 
 $tableData = array_map(function($c) {
     $nomComplet = '<div class="flex items-center gap-2"><i class="fas fa-user text-brand-500"></i>' . htmlspecialchars($c['nom'] . ' ' . ($c['prenom'] ?? '')) . '</div>';
-    $typeLabel = match($c['type_client'] ?? 'particulier') {
-        'particulier' => 'Particulier',
-        'entreprise' => 'Entreprise',
-        'administration' => 'Administration',
-        default => $c['type_client']
-    };
     return [
         $nomComplet,
         htmlspecialchars($c['tel'] ?? '-'),
         htmlspecialchars($c['email'] ?? '-'),
         htmlspecialchars($c['ville'] ?? '-'),
-        renderBadge($typeLabel, 'info')
+        htmlspecialchars($c['nom_categorie'] ?? '-')
     ];
 }, $clients);
 
 echo renderResponsiveTable(
-    ['Nom complet', 'Téléphone', 'Email', 'Ville', 'Type'],
+    ['Nom complet', 'Téléphone', 'Email', 'Ville', 'Catégorie'],
     $tableData,
     [
         'mobileTitle' => 0,
@@ -79,7 +74,7 @@ $createBody = '
     </div>
     <div class="grid grid-cols-2 gap-3">
         ' . renderInput('ville', 'Ville', 'text', '') . '
-        ' . renderSelect('type_client', 'Type de client', ['particulier' => 'Particulier', 'entreprise' => 'Entreprise', 'administration' => 'Administration'], 'particulier') . '
+        ' . renderSelect('id_categorie_client', 'Catégorie', ['' => '-- Aucune catégorie --'] + $categories, null) . '
     </div>
     ' . renderCheckbox('est_actif', 'Client actif', true) . '
     <div class="modal-footer px-0 pb-0">
@@ -106,7 +101,7 @@ $editBody = '
     </div>
     <div class="grid grid-cols-2 gap-3">
         ' . renderInput('ville', 'Ville', 'text', '', null, ['id' => 'edit_ville']) . '
-        ' . renderSelect('type_client', 'Type de client', ['particulier' => 'Particulier', 'entreprise' => 'Entreprise', 'administration' => 'Administration'], 'particulier', null, ['id' => 'edit_type_client']) . '
+        ' . renderSelect('id_categorie_client', 'Catégorie', ['' => '-- Aucune catégorie --'] + $categories, null, null, ['id' => 'edit_categorie']) . '
     </div>
     ' . renderCheckbox('est_actif', 'Client actif', true, ['id' => 'edit_est_actif']) . '
     <div class="modal-footer px-0 pb-0">
@@ -121,14 +116,16 @@ echo renderModal('editModal', 'Modifier un client', $editBody);
 document.querySelectorAll('[data-edit-client]').forEach(btn => {
     btn.addEventListener('click', function() {
         const data = JSON.parse(this.getAttribute('data-edit-client'));
-        document.getElementById('edit_id').value = data.id_client;
+        document.getElementById('edit_id').value = data.id;
         document.getElementById('edit_nom').value = data.nom;
         document.getElementById('edit_prenom').value = data.prenom || '';
         document.getElementById('edit_tel').value = data.tel || '';
         document.getElementById('edit_email').value = data.email || '';
         document.getElementById('edit_ville').value = data.ville || '';
-        document.getElementById('edit_type_client').value = data.type_client || 'particulier';
         document.getElementById('edit_est_actif').checked = data.est_actif;
+        if (data.id_categorie_client) {
+            document.getElementById('edit_categorie').value = data.id_categorie_client;
+        }
     });
 });
 </script>

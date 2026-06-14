@@ -32,11 +32,7 @@ ob_start();
             'icon' => 'fa-eye',
             'title' => 'Voir le détail'
         ]);
-        $actions .= renderButton('', 'icon', '?action=restauration_restore&id=' . $e['id_corbeille'], [
-            'icon' => 'fa-trash-restore',
-            'title' => 'Restaurer',
-            'data-confirm' => 'Restaurer cet élément ?'
-        ]);
+        $actions .= '<button type="button" class="btn-icon" onclick="openRestoreModal(' . $e['id_corbeille'] . ')" title="Restaurer"><i class="fas fa-trash-restore"></i></button>';
         $actions .= renderButton('', 'icon-danger', '?action=restauration_delete&id=' . $e['id_corbeille'], [
             'icon' => 'fa-trash',
             'title' => 'Supprimer définitivement',
@@ -46,26 +42,16 @@ ob_start();
     };
     
     $tableData = array_map(function($e) {
-        // Déterminer la couleur du badge selon le type (version étendue)
-        $typeUpper = strtoupper($e['type_objet']);
-        
-        if (strpos($typeUpper, 'PRODUIT') !== false) {
-            $badgeType = 'success';
-        } elseif (strpos($typeUpper, 'FOURNISSEUR') !== false) {
-            $badgeType = 'info';
-        } elseif (strpos($typeUpper, 'CLIENT') !== false) {
-            $badgeType = 'primary';
-        } elseif (strpos($typeUpper, 'BANQUE') !== false) {
-            $badgeType = 'warning';
-        } elseif (strpos($typeUpper, 'FAMILLE') !== false) {
-            $badgeType = 'secondary';
-        } elseif (strpos($typeUpper, 'CATEGORIE') !== false) {
-            $badgeType = 'dark';
-        } elseif (strpos($typeUpper, 'MOUVEMENT') !== false) {
-            $badgeType = 'danger';
-        } else {
-            $badgeType = 'neutral';
-        }
+        $badgeType = match($e['type_objet']) {
+            'PRODUIT_COMPLET' => 'success',
+            'FOURNISSEUR_COMPLET' => 'info',
+            'CLIENT' => 'primary',
+            'BANQUE' => 'warning',
+            'FAMILLE' => 'secondary',
+            'CATEGORIE_CLIENT' => 'dark',
+            'MOUVEMENT_BANQUE' => 'danger',
+            default => 'neutral'
+        };
         
         $xml = @simplexml_load_string($e['donnees_xml']);
         $nom = '';
@@ -101,6 +87,35 @@ ob_start();
     );
     ?>
 <?php endif; ?>
+
+<!-- Modal restauration avec renderModal -->
+<?php
+$restoreBody = '
+<div class="text-center py-4">
+    <div class="text-h2 text-neutral-70 mb-4">
+        <i class="fas fa-trash-restore text-success-500"></i>
+    </div>
+    <p class="text-body text-neutral-30">Êtes-vous sûr de vouloir restaurer cet élément ?</p>
+    <p class="text-caption text-neutral-50 mt-2">L\'élément sera réinséré dans sa table d\'origine.</p>
+</div>';
+
+$restoreFooter = '
+    <button type="button" class="btn-secondary" onclick="closeRestoreModal()">Annuler</button>
+    <a href="#" id="restoreLink" class="btn-success">Restaurer</a>
+';
+
+echo renderModal('restoreModal', 'Confirmation de restauration', $restoreBody, $restoreFooter);
+?>
+
+<script>
+function openRestoreModal(id) {
+    document.getElementById('restoreLink').href = '?action=restauration_restore&id=' + id;
+    document.getElementById('restoreModal').classList.remove('hidden');
+}
+function closeRestoreModal() {
+    document.getElementById('restoreModal').classList.add('hidden');
+}
+</script>
 
 <?php
 $content = ob_get_clean();

@@ -236,8 +236,14 @@ switch ($action) {
         break;
 
     case 'familles&print':
-case 'familles_print':
-    // À ajouter
+    case 'familles_print':
+
+     case 'categories_client':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->index();
+        break;
+        
     // ==========================================
     // FIN MODULE 3
     // ==========================================

@@ -32,7 +32,6 @@ class ClientController {
                     'tel' => trim($_POST['tel'] ?? ''),
                     'email' => trim($_POST['email'] ?? ''),
                     'ville' => trim($_POST['ville'] ?? ''),
-                    'type_client' => $_POST['type_client'] ?? 'particulier',
                     'est_actif' => isset($_POST['est_actif'])
                 ];
                 
@@ -59,7 +58,6 @@ class ClientController {
                     'tel' => trim($_POST['tel'] ?? ''),
                     'email' => trim($_POST['email'] ?? ''),
                     'ville' => trim($_POST['ville'] ?? ''),
-                    'type_client' => $_POST['type_client'] ?? 'particulier',
                     'est_actif' => isset($_POST['est_actif'])
                 ];
                 
@@ -102,20 +100,6 @@ class ClientController {
         $clients = $this->model->getAll();
         $categories = $this->categorieModel->getForSelect();
         require __DIR__ . '/../views/structure/clients.php';
-    }
-
-    public function voirCredit() {
-        checkRight('voir_credit_client');
-        
-        $id = (int)($_GET['id'] ?? 0);
-        $client = $this->model->getById($id);
-        if (!$client) {
-            setFlash('Client introuvable.', 'danger');
-            header('Location: ?action=clients');
-            exit;
-        }
-        
-        require __DIR__ . '/../views/structure/client_credit.php';
     }
 
     private function printList() {
