@@ -300,6 +300,42 @@ switch ($action) {
         $controller = new ClientController($pdo);
         $controller->delete();
         break;
+
+    case 'categorie_clients':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->index();
+        break;
+
+    case 'categorie_client_creer':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->create();
+        break;
+
+    case 'categorie_client_enregistrer':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->store();
+        break;
+
+    case 'categorie_client_modifier':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->edit();
+        break;
+
+    case 'categorie_client_mettre_a_jour':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->update();
+        break;
+
+    case 'categorie_client_supprimer':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->delete();
+        break;
     
     case 'banques':
         require_once 'controllers/BanqueController.php';

@@ -75,13 +75,21 @@ echo renderPageHeader($title, '', renderButton('Retour', 'secondary', $backLink,
                     <input type="text" name="ville" value="<?= htmlspecialchars($ville) ?>" class="input">
                 </div>
                 <div>
-                    <label class="label">Catégorie</label>
-                    <select name="id_categorie_client" class="select">
-                        <option value="">-- Aucune catégorie --</option>
-                        <?php foreach ($categories as $id => $nomCat): ?>
-                            <option value="<?= $id ?>" <?= $id_categorie_client == $id ? 'selected' : '' ?>><?= htmlspecialchars($nomCat) ?></option>
-                        <?php endforeach; ?>
-                    </select>
+                    <label class="label">Catégorie <span class="text-red-500">*</span></label>
+                    <?php if (!empty($categories)): ?>
+                        <select name="id_categorie_client" class="select" required>
+                            <option value="">-- Sélectionnez une catégorie --</option>
+                            <?php foreach ($categories as $id => $nomCat): ?>
+                                <option value="<?= $id ?>" <?= $id_categorie_client == $id ? 'selected' : '' ?>><?= htmlspecialchars($nomCat) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php else: ?>
+                        <div class="p-3 border border-yellow-300 bg-yellow-50 rounded text-yellow-800 space-y-2">
+                            <p>Aucune catégorie client disponible. Veuillez créer une catégorie client avant d'ajouter un client.</p>
+                            <?= renderButton('Créer une catégorie client', 'secondary', '?action=categorie_client_creer', ['icon' => 'fa-plus']) ?>
+                        </div>
+                    <?php endif; ?>
+                      <?= renderButton('Créer une catégorie client', 'secondary', '?action=categorie_client_creer', ['icon' => 'fa-plus']) ?>
                 </div>
             </div>
             
@@ -108,7 +116,7 @@ echo renderPageHeader($title, '', renderButton('Retour', 'secondary', $backLink,
             
             <div class="flex justify-end gap-2 pt-4">
                 <a href="<?= $backLink ?>" class="btn-secondary">Annuler</a>
-                <button type="submit" class="btn-primary">
+                <button type="submit" class="btn-primary" <?= empty($categories) ? 'disabled' : '' ?>>
                     <i class="fas <?= $isEdit ? 'fa-save' : 'fa-plus' ?> mr-1.5 text-xs"></i>
                     <?= $isEdit ? 'Mettre à jour' : 'Créer' ?>
                 </button>

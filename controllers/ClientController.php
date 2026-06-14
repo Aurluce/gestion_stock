@@ -47,8 +47,17 @@ class ClientController {
             'est_actif' => isset($_POST['est_actif'])
         ];
         
+        $errors = [];
         if (empty($data['nom'])) {
-            $_SESSION['error'] = "Le nom est requis.";
+            $errors[] = "Le nom est requis.";
+        }
+        if (empty($data['id_categorie_client'])) {
+            $errors[] = "La catégorie est requise.";
+        }
+        
+        if (!empty($errors)) {
+            $_SESSION['errors'] = $errors;
+            $_SESSION['old'] = $_POST;
             header('Location: index.php?action=client_creer');
             exit;
         }
@@ -93,6 +102,21 @@ class ClientController {
             'type_client' => $_POST['type_client'] ?? 'particulier',
             'est_actif' => isset($_POST['est_actif'])
         ];
+        
+        $errors = [];
+        if (empty($data['nom'])) {
+            $errors[] = "Le nom est requis.";
+        }
+        if (empty($data['id_categorie_client'])) {
+            $errors[] = "La catégorie est requise.";
+        }
+        
+        if (!empty($errors)) {
+            $_SESSION['errors'] = $errors;
+            $_SESSION['old'] = $_POST;
+            header('Location: index.php?action=client_modifier&id=' . $id);
+            exit;
+        }
         
         $this->model->update($id, $data);
         $_SESSION['success'] = "Client mis à jour.";
