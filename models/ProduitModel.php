@@ -42,6 +42,16 @@ class ProduitModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    public function getProduitsPeres(): array {
+        $stmt = $this->pdo->query("SELECT id_produit, nom_produit FROM structure.produit WHERE id_produit_pere IS NULL ORDER BY nom_produit");
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $select = ['' => '-- Aucun (produit principal) --'];
+        foreach ($rows as $row) {
+            $select[$row['id_produit']] = $row['nom_produit'];
+        }
+        return $select;
+    }
+    
     public function getProduitsPeresByFamille(int $idFamille): array {
         $stmt = $this->pdo->prepare("
             SELECT id_produit, nom_produit 

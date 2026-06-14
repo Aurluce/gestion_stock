@@ -2556,3 +2556,141 @@ SELECT 1, id_droit FROM utilisateur.droit
 WHERE nom_droit IN ('creer_banque', 'modifier_banque', 'supprimer_banque', 
                     'lister_banques', 'creer_mouvement_banque', 'etat_versements_periode')
 ON CONFLICT DO NOTHING;
+
+-- TRIGGER POUR LA CORBEIL ( STRUCTUE )
+
+-- Fonction de sauvegarde pour client
+CREATE OR REPLACE FUNCTION utilisateur.fn_backup_client()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_xml XML;
+BEGIN
+    v_xml := xmlelement(
+        NAME client,
+        xmlforest(
+            OLD.id_client,
+            OLD.nom,
+            OLD.prenom,
+            OLD.tel,
+            OLD.email,
+            OLD.ville,
+            OLD.type_client,
+            OLD.solde_credit
+        )
+    );
+    
+    INSERT INTO utilisateur.corbeille_xml (type_objet, id_objet, donnees_xml)
+    VALUES ('CLIENT', OLD.id_client, v_xml);
+    
+    RETURN OLD;
+END;
+$$;
+
+-- Trigger sur la table client
+CREATE TRIGGER trg_backup_client
+BEFORE DELETE ON structure.client
+FOR EACH ROW
+EXECUTE FUNCTION utilisateur.fn_backup_client();
+
+-- Fonction de sauvegarde pour banque
+CREATE OR REPLACE FUNCTION utilisateur.fn_backup_banque()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_xml XML;
+BEGIN
+    v_xml := xmlelement(
+        NAME banque,
+        xmlforest(
+            OLD.id_banque,
+            OLD.nom_banque,
+            OLD.sigle,
+            OLD.responsable,
+            OLD.tel,
+            OLD.email,
+            OLD.adresse
+        )
+    );
+    
+    INSERT INTO utilisateur.corbeille_xml (type_objet, id_objet, donnees_xml)
+    VALUES ('BANQUE', OLD.id_banque, v_xml);
+    
+    RETURN OLD;
+END;
+$$;
+
+-- Trigger sur la table banque
+CREATE TRIGGER trg_backup_banque
+BEFORE DELETE ON structure.banque
+FOR EACH ROW
+EXECUTE FUNCTION utilisateur.fn_backup_banque();
+
+
+-- Fonction de sauvegarde pour famille
+CREATE OR REPLACE FUNCTION utilisateur.fn_backup_famille()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_xml XML;
+BEGIN
+    v_xml := xmlelement(
+        NAME famille,
+        xmlforest(
+            OLD.id_famille,
+            OLD.nom_famille,
+            OLD.description
+        )
+    );
+    
+    INSERT INTO utilisateur.corbeille_xml (type_objet, id_objet, donnees_xml)
+    VALUES ('FAMILLE', OLD.id_famille, v_xml);
+    
+    RETURN OLD;
+END;
+$$;
+
+-- Trigger sur la table famille
+CREATE TRIGGER trg_backup_famille
+BEFORE DELETE ON structure.famille
+FOR EACH ROW
+EXECUTE FUNCTION utilisateur.fn_backup_famille();
+
+
+-- Fonction de sauvegarde pour categorie_client
+CREATE OR REPLACE FUNCTION utilisateur.fn_backup_categorie_client()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_xml XML;
+BEGIN
+    v_xml := xmlelement(
+        NAME categorie_client,
+        xmlforest(
+            OLD.id_categorie_client,
+            OLD.nom_categorie,
+            OLD.taux_remise,
+            OLD.description
+        )
+    );
+    
+    INSERT INTO utilisateur.corbeille_xml (type_objet, id_objet, donnees_xml)
+    VALUES ('CATEGORIE_CLIENT', OLD.id_categorie_client, v_xml);
+    
+    RETURN OLD;
+END;
+$$;
+
+-- Trigger sur la table categorie_client
+CREATE TRIGGER trg_backup_categorie_client
+BEFORE DELETE ON structure.categorie_client
+FOR EACH ROW
+EXECUTE FUNCTION utilisateur.fn_backup_categorie_client();
+
+psql -U aurlucef -d gestion_stock -h localhost -c "SELECT tgname, tgrelid::regclass FROM pg_trigger WHERE tgname LIKE '%backup%' ORDER BY tgrelid::regclass::text;"
+
+

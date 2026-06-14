@@ -67,6 +67,18 @@ class RestaurationModel {
                 case 'FOURNISSEUR_COMPLET':
                     $this->restoreFournisseur($xmlObj, $idObjet);
                     break;
+                case 'CLIENT':
+                    $this->restoreClient($xmlObj, $idObjet);
+                    break;
+                case 'BANQUE':
+                    $this->restoreBanque($xmlObj, $idObjet);
+                    break;
+                case 'FAMILLE':
+                    $this->restoreFamille($xmlObj, $idObjet);
+                    break;
+                case 'CATEGORIE_CLIENT':
+                    $this->restoreCategorieClient($xmlObj, $idObjet);
+                    break;
                 case 'MOUVEMENT_BANQUE':
                     $this->restoreMouvementBanque($xmlObj, $idObjet);
                     break;
@@ -133,6 +145,93 @@ class RestaurationModel {
         ]);
         
         $this->pdo->exec("SELECT setval('structure.fournisseur_id_fournisseur_seq', GREATEST((SELECT MAX(id_fournisseur) FROM structure.fournisseur), (SELECT nextval('structure.fournisseur_id_fournisseur_seq'))))");
+    }
+    
+    private function restoreClient($xml, int $idObjet): void {
+        $stmt = $this->pdo->prepare("SELECT id_client FROM structure.client WHERE id_client = ?");
+        $stmt->execute([$idObjet]);
+        if ($stmt->fetch()) return;
+        
+        $stmt = $this->pdo->prepare("
+            INSERT INTO structure.client 
+            (id_client, id_categorie_client, nom, prenom, tel, email, ville, type_client, solde_credit, est_actif)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, true)
+        ");
+        $stmt->execute([
+            (int)$xml->id_client,
+            isset($xml->id_categorie_client) && (int)$xml->id_categorie_client ? (int)$xml->id_categorie_client : null,
+            (string)$xml->nom,
+            isset($xml->prenom) ? (string)$xml->prenom : null,
+            isset($xml->tel) ? (string)$xml->tel : null,
+            isset($xml->email) ? (string)$xml->email : null,
+            isset($xml->ville) ? (string)$xml->ville : null,
+            isset($xml->type_client) ? (string)$xml->type_client : 'particulier',
+            isset($xml->solde_credit) ? (float)$xml->solde_credit : 0
+        ]);
+        
+        $this->pdo->exec("SELECT setval('structure.client_id_client_seq', GREATEST((SELECT MAX(id_client) FROM structure.client), (SELECT nextval('structure.client_id_client_seq'))))");
+    }
+    
+    private function restoreBanque($xml, int $idObjet): void {
+        $stmt = $this->pdo->prepare("SELECT id_banque FROM structure.banque WHERE id_banque = ?");
+        $stmt->execute([$idObjet]);
+        if ($stmt->fetch()) return;
+        
+        $stmt = $this->pdo->prepare("
+            INSERT INTO structure.banque 
+            (id_banque, nom_banque, sigle, responsable, tel, email, adresse)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            (int)$xml->id_banque,
+            (string)$xml->nom_banque,
+            isset($xml->sigle) ? (string)$xml->sigle : null,
+            isset($xml->responsable) ? (string)$xml->responsable : null,
+            isset($xml->tel) ? (string)$xml->tel : null,
+            isset($xml->email) ? (string)$xml->email : null,
+            isset($xml->adresse) ? (string)$xml->adresse : null
+        ]);
+        
+        $this->pdo->exec("SELECT setval('structure.banque_id_banque_seq', GREATEST((SELECT MAX(id_banque) FROM structure.banque), (SELECT nextval('structure.banque_id_banque_seq'))))");
+    }
+    
+    private function restoreFamille($xml, int $idObjet): void {
+        $stmt = $this->pdo->prepare("SELECT id_famille FROM structure.famille WHERE id_famille = ?");
+        $stmt->execute([$idObjet]);
+        if ($stmt->fetch()) return;
+        
+        $stmt = $this->pdo->prepare("
+            INSERT INTO structure.famille 
+            (id_famille, nom_famille, description)
+            VALUES (?, ?, ?)
+        ");
+        $stmt->execute([
+            (int)$xml->id_famille,
+            (string)$xml->nom_famille,
+            isset($xml->description) ? (string)$xml->description : null
+        ]);
+        
+        $this->pdo->exec("SELECT setval('structure.famille_id_famille_seq', GREATEST((SELECT MAX(id_famille) FROM structure.famille), (SELECT nextval('structure.famille_id_famille_seq'))))");
+    }
+    
+    private function restoreCategorieClient($xml, int $idObjet): void {
+        $stmt = $this->pdo->prepare("SELECT id_categorie_client FROM structure.categorie_client WHERE id_categorie_client = ?");
+        $stmt->execute([$idObjet]);
+        if ($stmt->fetch()) return;
+        
+        $stmt = $this->pdo->prepare("
+            INSERT INTO structure.categorie_client 
+            (id_categorie_client, nom_categorie, taux_remise, description)
+            VALUES (?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            (int)$xml->id_categorie_client,
+            (string)$xml->nom_categorie,
+            isset($xml->taux_remise) ? (float)$xml->taux_remise : 0,
+            isset($xml->description) ? (string)$xml->description : null
+        ]);
+        
+        $this->pdo->exec("SELECT setval('structure.categorie_client_id_categorie_client_seq', GREATEST((SELECT MAX(id_categorie_client) FROM structure.categorie_client), (SELECT nextval('structure.categorie_client_id_categorie_client_seq'))))");
     }
     
     private function restoreMouvementBanque($xml, int $idObjet): void {

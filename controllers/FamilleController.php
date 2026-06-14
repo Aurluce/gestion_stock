@@ -2,110 +2,90 @@
 require_once __DIR__ . '/../models/FamilleModel.php';
 
 class FamilleController {
-    private $model;
     private $pdo;
-    
+    private $model;
+
     public function __construct($pdo) {
         $this->pdo = $pdo;
         $this->model = new FamilleModel($pdo);
     }
-    
+
     public function index() {
+        // Vérifier si c'est une demande d'impression
+        if (isset($_GET['print'])) {
+            $this->printList();
+            return;
+        }
+        
+        checkRight('lister_familles');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if ($_POST['action'] === 'add') {
+                checkRight('creer_famille');
+                $nom = trim($_POST['nom_famille'] ?? '');
+                $description = trim($_POST['description'] ?? '');
+                
+                if (empty($nom)) {
+                    setFlash('Le nom de la famille est requis.', 'danger');
+                } else {
+                    $id = $this->model->create($nom, $description ?: null);
+                    if ($id) {
+                        logAudit($this->pdo, $_SESSION['user_id'], 'INSERT', 'famille', $id, null, ['nom' => $nom]);
+                        setFlash("Famille '$nom' créée.", 'success');
+                    } else {
+                        setFlash("Erreur lors de la création.", 'danger');
+                    }
+                }
+                header('Location: ?action=familles');
+                exit;
+            } elseif ($_POST['action'] === 'edit') {
+                checkRight('modifier_famille');
+                $id = (int)$_POST['id_famille'];
+                $nom = trim($_POST['nom_famille'] ?? '');
+                $description = trim($_POST['description'] ?? '');
+                
+                if (empty($nom)) {
+                    setFlash('Le nom de la famille est requis.', 'danger');
+                } else {
+                    $old = $this->model->getById($id);
+                    if ($this->model->update($id, $nom, $description ?: null)) {
+                        logAudit($this->pdo, $_SESSION['user_id'], 'UPDATE', 'famille', $id, $old, ['nom' => $nom]);
+                        setFlash("Famille '$nom' mise à jour.", 'success');
+                    } else {
+                        setFlash("Erreur lors de la mise à jour.", 'danger');
+                    }
+                }
+                header('Location: ?action=familles');
+                exit;
+            }
+        }
+
+        if (isset($_GET['delete'])) {
+            checkRight('supprimer_famille');
+            $id = (int)$_GET['delete'];
+            $famille = $this->model->getById($id);
+            if (!$famille) {
+                setFlash('Famille introuvable.', 'danger');
+            } elseif (!$this->model->isDeletable($id)) {
+                setFlash('Cette famille contient des produits.', 'danger');
+            } elseif ($this->model->delete($id)) {
+                logAudit($this->pdo, $_SESSION['user_id'], 'DELETE', 'famille', $id, $famille, null);
+                setFlash('Famille supprimée.', 'success');
+            } else {
+                setFlash('Erreur lors de la suppression.', 'danger');
+            }
+            header('Location: ?action=familles');
+            exit;
+        }
+
+        $familles = $this->model->getAll();
+        require __DIR__ . '/../views/structure/familles.php';
+    }
+
+    private function printList() {
         checkRight('lister_familles');
         $familles = $this->model->getAll();
-        ob_start();
-        require __DIR__ . '/../views/structure/familles.php';
-        $content = ob_get_clean();
-        require_once __DIR__ . '/../views/layouts/main.php';
-    }
-    
-    public function create() {
-        checkRight('creer_famille');
-        ob_start();
-        require __DIR__ . '/../views/structure/famille_form.php';
-        $content = ob_get_clean();
-        require_once __DIR__ . '/../views/layouts/main.php';
-    }
-    
-    public function store() {
-        checkRight('creer_famille');
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?action=familles');
-            exit;
-        }
-        
-        $nom = trim($_POST['nom_famille'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        
-        if (empty($nom)) {
-            $_SESSION['error'] = "Le nom de la famille est requis.";
-            header('Location: index.php?action=famille_creer');
-            exit;
-        }
-        
-        try {
-            $this->model->create($nom, $description ?: null);
-            $_SESSION['success'] = "Famille '{$nom}' créée.";
-            header('Location: index.php?action=familles');
-            exit;
-        } catch (Exception $e) {
-            $_SESSION['error'] = "Erreur : " . $e->getMessage();
-            header('Location: index.php?action=famille_creer');
-            exit;
-        }
-    }
-    
-    public function edit() {
-        checkRight('modifier_famille');
-        $id = (int)($_GET['id'] ?? 0);
-        $famille = $this->model->getById($id);
-        if (!$famille) {
-            $_SESSION['error'] = "Famille introuvable.";
-            header('Location: index.php?action=familles');
-            exit;
-        }
-        ob_start();
-        require __DIR__ . '/../views/structure/famille_form.php';
-        $content = ob_get_clean();
-        require_once __DIR__ . '/../views/layouts/main.php';
-    }
-    
-    public function update() {
-        checkRight('modifier_famille');
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: index.php?action=familles');
-            exit;
-        }
-        
-        $id = (int)($_POST['id_famille'] ?? 0);
-        $nom = trim($_POST['nom_famille'] ?? '');
-        $description = trim($_POST['description'] ?? '');
-        
-        if (empty($nom)) {
-            $_SESSION['error'] = "Le nom est requis.";
-            header("Location: index.php?action=famille_modifier&id=$id");
-            exit;
-        }
-        
-        $this->model->update($id, $nom, $description ?: null);
-        $_SESSION['success'] = "Famille mise à jour.";
-        header('Location: index.php?action=familles');
-        exit;
-    }
-    
-    public function delete() {
-        checkRight('supprimer_famille');
-        $id = (int)($_GET['id'] ?? 0);
-        $famille = $this->model->getById($id);
-        if (!$famille) {
-            $_SESSION['error'] = "Famille introuvable.";
-            header('Location: index.php?action=familles');
-            exit;
-        }
-        
-        $this->model->delete($id);
-        $_SESSION['success'] = "Famille supprimée.";
-        header('Location: index.php?action=familles');
+        require __DIR__ . '/../views/structure/prints/familles.php';
         exit;
     }
 }

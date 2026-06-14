@@ -7,8 +7,7 @@ class CategorieClientModel {
     }
     
     public function getForSelect(): array {
-        $sql = "SELECT id_categorie_client, nom_categorie FROM structure.categorie_client ORDER BY nom_categorie";
-        $stmt = $this->pdo->query($sql);
+        $stmt = $this->pdo->query("SELECT id_categorie_client, nom_categorie FROM structure.categorie_client ORDER BY nom_categorie");
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $select = [];
         foreach ($rows as $row) {
