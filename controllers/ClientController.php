@@ -108,4 +108,19 @@ class ClientController {
         require __DIR__ . '/../views/structure/prints/clients.php';
         exit;
     }
+
+    public function voirCredit(): void {
+        checkRight('voir_credit_client');
+        $id = (int)($_GET['id'] ?? 0);
+        $client = $this->model->getById($id);
+        if (!$client) {
+            setFlash('Client introuvable.', 'danger');
+            header('Location: ?action=clients');
+            exit;
+        }
+        ob_start();
+        require __DIR__ . '/../views/structure/client_credit.php';
+        $content = ob_get_clean();
+        require_once __DIR__ . '/../views/layouts/main.php';
+    }
 }

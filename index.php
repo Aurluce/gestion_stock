@@ -161,17 +161,99 @@ switch ($action) {
         $controller = new ProduitController($pdo);
         $controller->delete();
         break;
+    case 'produit_desactiver':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->disable();
+        break;
+
+    case 'produit_activer':
+        require_once 'controllers/ProduitController.php';
+        $controller = new ProduitController($pdo);
+        $controller->enable();
+        break;
+
+    case 'fournisseur_creer':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->create();
+        break;
+
+    case 'fournisseur_enregistrer':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->store();
+        break;
+
+    case 'fournisseur_modifier':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->edit();
+        break;
+
+    case 'fournisseur_mettre_a_jour':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->update();
+        break;
+
+    case 'fournisseur_supprimer':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->delete();
+        break;
+
+    case 'fournisseur_desactiver':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->disable();
+        break;
+
+    case 'fournisseur_activer':
+        require_once 'controllers/FournisseurController.php';
+        $controller = new FournisseurController($pdo);
+        $controller->enable();
+        break;
+
+    case 'categorie_clients':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->index();
+        break;
+
+    case 'categorie_client_creer':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->create();
+        break;
+
+    case 'categorie_client_enregistrer':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->store();
+        break;
+
+    case 'categorie_client_modifier':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->edit();
+        break;
+
+    case 'categorie_client_mettre_a_jour':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->update();
+        break;
+
+    case 'categorie_client_supprimer':
+        require_once 'controllers/CategorieClientController.php';
+        $controller = new CategorieClientController($pdo);
+        $controller->delete();
+        break;
     case 'ajax_produits_peres':
         require_once 'controllers/ProduitController.php';
         $controller = new ProduitController($pdo);
         $controller->getProduitsPeresAjax();
-        break;
-    
-    // Fournisseurs
-    case 'fournisseurs':
-        require_once 'controllers/FournisseurController.php';
-        $controller = new FournisseurController($pdo);
-        $controller->index();
         break;
     
     // Clients
@@ -235,15 +317,6 @@ switch ($action) {
         $controller->clear();
         break;
 
-    case 'familles&print':
-    case 'familles_print':
-
-     case 'categories_client':
-        require_once 'controllers/CategorieClientController.php';
-        $controller = new CategorieClientController($pdo);
-        $controller->index();
-        break;
-        
     // ==========================================
     // FIN MODULE 3
     // ==========================================

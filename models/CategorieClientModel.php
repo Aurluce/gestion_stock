@@ -31,7 +31,6 @@ class CategorieClientModel {
         }
         return $select;
     }
-    
     public function create(array $data): int {
         $stmt = $this->pdo->prepare("
             INSERT INTO structure.categorie_client (nom_categorie, taux_remise, description)
