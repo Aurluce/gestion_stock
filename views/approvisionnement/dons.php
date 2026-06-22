@@ -25,7 +25,7 @@ $donsArr = array_map(function($d) use ($donsLignes) {
 $actionsRenderer = function($row, $rowIndex) use ($donsArr) {
     $d = $donsArr[$rowIndex]['don'] ?? null;
     if (!$d) return '';
-    $actions = '';
+    $actions = renderButton('', 'icon', '', ['icon' => 'fa-eye', 'title' => 'Voir', 'data-detail' => '?action=don_detail&id=' . $d['id_don'], 'data-detail-title' => 'Don de ' . $d['donateur']]);
     if (checkRightIfLogged('modifier_don')) {
         $actions .= renderButton('', 'icon', '', [
             'icon' => 'fa-edit', 'title' => 'Modifier',

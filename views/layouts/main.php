@@ -11,8 +11,8 @@ require_once __DIR__ . '/../components/autoload.php';
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title><?= htmlspecialchars($title ?? 'Gestion Stock') ?></title>
     <link rel="stylesheet" href="public/css/main.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="public/vendor/fontawesome/css/all.min.css">
+    <script src="public/vendor/jquery.min.js"></script>
 </head>
 <body class="appshell">
 
@@ -43,6 +43,7 @@ require_once __DIR__ . '/../components/autoload.php';
                 ['label' => 'Produits',    'icon' => 'fa-tag',    'href' => '?action=produits', 'active' => $currentAction === 'produits'],
                 ['label' => 'Fournisseurs','icon' => 'fa-truck',  'href' => '?action=fournisseurs', 'active' => $currentAction === 'fournisseurs'],
                 ['label' => 'Clients',     'icon' => 'fa-users',  'href' => '?action=clients', 'active' => $currentAction === 'clients'],
+                ['label' => 'Catégories clients', 'icon' => 'fa-tags', 'href' => '?action=categorie_clients', 'active' => $currentAction === 'categorie_clients'],
                 ['label' => 'Banques', 'icon' => 'fa-university', 'href' => '?action=banques', 'active' => $currentAction === 'banques'],
                 ['label' => 'État banque', 'icon' => 'fa-chart-line', 'href' => '?action=banque_versements', 'active' => $currentAction === 'banque_versements'],
                 ['label' => 'Corbeille', 'icon' => 'fa-trash-restore', 'href' => '?action=restauration', 'active' => $currentAction === 'restauration'],
@@ -104,15 +105,7 @@ require_once __DIR__ . '/../components/autoload.php';
                 </button>
                 <?= $breadcrumb ?? '' ?>
             </div>
-            <div class="topbar-center">
-                <?= renderGlobalSearch() ?>
-            </div>
             <div class="topbar-right">
-                <!-- Bouton search pour mobile -->
-                <button class="topbar-icon-btn md:hidden" data-mobile-search-toggle title="Rechercher">
-                    <i class="fas fa-search"></i>
-                </button>
-                
                 <div class="topbar-user-dropdown" data-dropdown-toggle="userDropdown">
                     <div class="topbar-user">
                         <div class="topbar-avatar">
@@ -193,15 +186,17 @@ require_once __DIR__ . '/../components/autoload.php';
         </div>
     </div>
 
-    <!-- Modal de recherche mobile -->
-    <div id="mobileSearchModal" class="modal-overlay hidden animate-fade-in">
+    <!-- Modal de détail AJAX -->
+    <div id="detailModal" class="modal-overlay hidden animate-fade-in modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title">Rechercher</h3>
+                <h3 class="modal-title" id="detailModalTitle">Détails</h3>
                 <button type="button" class="btn-icon" data-modal-close><i class="fas fa-times"></i></button>
             </div>
-            <div class="modal-body">
-                <?= renderGlobalSearch() ?>
+            <div class="modal-body" id="detailBody">
+                <div class="flex items-center justify-center py-8">
+                    <i class="fas fa-spinner fa-spin text-h3 text-neutral-50"></i>
+                </div>
             </div>
         </div>
     </div>

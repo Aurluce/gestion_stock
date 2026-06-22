@@ -31,7 +31,7 @@ $statutBadges = [
 $actionsRenderer = function($row, $rowIndex) use ($commandes) {
     $cmd = $commandes[$rowIndex] ?? null;
     if (!$cmd) return '';
-    $actions = '';
+    $actions = renderButton('', 'icon', '', ['icon' => 'fa-eye', 'title' => 'Voir', 'data-detail' => '?action=commande_client_detail&id=' . $cmd['id_cc'], 'data-detail-title' => 'Commande : ' . $cmd['reference']]);
     if (checkRightIfLogged('modifier_commande_client') && $cmd['statut'] === 'en_cours') {
         $actions .= renderButton('', 'icon', '', [
             'icon' => 'fa-edit',

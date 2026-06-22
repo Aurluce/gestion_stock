@@ -16,6 +16,11 @@ if (!in_array($action, $publicActions) && !isset($_SESSION['user_id'])) {
     exit;
 }
 
+// Set PostgreSQL session variable for backup triggers to capture who deletes
+if (isset($_SESSION['user_id'])) {
+    $pdo->exec("SET SESSION \"app.user_id\" = '" . (int)$_SESSION['user_id'] . "'");
+}
+
 switch ($action) {
     case 'login':
         require_once 'controllers/AuthController.php';
@@ -139,30 +144,6 @@ switch ($action) {
         $controller->index();
         break;
 
-    case 'famille_creer':
-        require_once 'controllers/FamilleController.php';
-        $controller = new FamilleController($pdo);
-        $controller->create();
-        break;
-
-    case 'famille_enregistrer':
-        require_once 'controllers/FamilleController.php';
-        $controller = new FamilleController($pdo);
-        $controller->store();
-        break;
-
-    case 'famille_modifier':
-        require_once 'controllers/FamilleController.php';
-        $controller = new FamilleController($pdo);
-        $controller->edit();
-        break;
-
-    case 'famille_mettre_a_jour':
-        require_once 'controllers/FamilleController.php';
-        $controller = new FamilleController($pdo);
-        $controller->update();
-        break;
-
     case 'famille_supprimer':
         require_once 'controllers/FamilleController.php';
         $controller = new FamilleController($pdo);
@@ -173,30 +154,6 @@ switch ($action) {
         require_once 'controllers/ProduitController.php';
         $controller = new ProduitController($pdo);
         $controller->index();
-        break;
-
-    case 'produit_creer':
-        require_once 'controllers/ProduitController.php';
-        $controller = new ProduitController($pdo);
-        $controller->create();
-        break;
-
-    case 'produit_enregistrer':
-        require_once 'controllers/ProduitController.php';
-        $controller = new ProduitController($pdo);
-        $controller->store();
-        break;
-
-    case 'produit_modifier':
-        require_once 'controllers/ProduitController.php';
-        $controller = new ProduitController($pdo);
-        $controller->edit();
-        break;
-
-    case 'produit_mettre_a_jour':
-        require_once 'controllers/ProduitController.php';
-        $controller = new ProduitController($pdo);
-        $controller->update();
         break;
 
     case 'produit_supprimer':
@@ -223,30 +180,6 @@ switch ($action) {
         $controller->index();
         break;
 
-    case 'fournisseur_creer':
-        require_once 'controllers/FournisseurController.php';
-        $controller = new FournisseurController($pdo);
-        $controller->create();
-        break;
-
-    case 'fournisseur_enregistrer':
-        require_once 'controllers/FournisseurController.php';
-        $controller = new FournisseurController($pdo);
-        $controller->store();
-        break;
-
-    case 'fournisseur_modifier':
-        require_once 'controllers/FournisseurController.php';
-        $controller = new FournisseurController($pdo);
-        $controller->edit();
-        break;
-
-    case 'fournisseur_mettre_a_jour':
-        require_once 'controllers/FournisseurController.php';
-        $controller = new FournisseurController($pdo);
-        $controller->update();
-        break;
-
     case 'fournisseur_supprimer':
         require_once 'controllers/FournisseurController.php';
         $controller = new FournisseurController($pdo);
@@ -271,30 +204,6 @@ switch ($action) {
         $controller->index();
         break;
 
-    case 'client_creer':
-        require_once 'controllers/ClientController.php';
-        $controller = new ClientController($pdo);
-        $controller->create();
-        break;
-
-    case 'client_enregistrer':
-        require_once 'controllers/ClientController.php';
-        $controller = new ClientController($pdo);
-        $controller->store();
-        break;
-
-    case 'client_modifier':
-        require_once 'controllers/ClientController.php';
-        $controller = new ClientController($pdo);
-        $controller->edit();
-        break;
-
-    case 'client_mettre_a_jour':
-        require_once 'controllers/ClientController.php';
-        $controller = new ClientController($pdo);
-        $controller->update();
-        break;
-
     case 'client_supprimer':
         require_once 'controllers/ClientController.php';
         $controller = new ClientController($pdo);
@@ -307,30 +216,6 @@ switch ($action) {
         $controller->index();
         break;
 
-    case 'categorie_client_creer':
-        require_once 'controllers/CategorieClientController.php';
-        $controller = new CategorieClientController($pdo);
-        $controller->create();
-        break;
-
-    case 'categorie_client_enregistrer':
-        require_once 'controllers/CategorieClientController.php';
-        $controller = new CategorieClientController($pdo);
-        $controller->store();
-        break;
-
-    case 'categorie_client_modifier':
-        require_once 'controllers/CategorieClientController.php';
-        $controller = new CategorieClientController($pdo);
-        $controller->edit();
-        break;
-
-    case 'categorie_client_mettre_a_jour':
-        require_once 'controllers/CategorieClientController.php';
-        $controller = new CategorieClientController($pdo);
-        $controller->update();
-        break;
-
     case 'categorie_client_supprimer':
         require_once 'controllers/CategorieClientController.php';
         $controller = new CategorieClientController($pdo);
@@ -341,26 +226,6 @@ switch ($action) {
         require_once 'controllers/BanqueController.php';
         $controller = new BanqueController($pdo);
         $controller->index();
-        break;
-    case 'banque_creer':
-        require_once 'controllers/BanqueController.php';
-        $controller = new BanqueController($pdo);
-        $controller->create();
-        break;
-    case 'banque_enregistrer':
-        require_once 'controllers/BanqueController.php';
-        $controller = new BanqueController($pdo);
-        $controller->store();
-        break;
-    case 'banque_modifier':
-        require_once 'controllers/BanqueController.php';
-        $controller = new BanqueController($pdo);
-        $controller->edit();
-        break;
-    case 'banque_mettre_a_jour':
-        require_once 'controllers/BanqueController.php';
-        $controller = new BanqueController($pdo);
-        $controller->update();
         break;
     case 'banque_supprimer':
         require_once 'controllers/BanqueController.php';
@@ -426,101 +291,47 @@ switch ($action) {
     // FIN MODULE 3
     // ==========================================
 
-    case 'dashboard':
-    default:
-        $title = "Tableau de bord";
-        $breadcrumb = renderBreadcrumb([
-            ['label' => 'Accueil', 'href' => '?action=dashboard'],
-            ['label' => 'Tableau de bord']
-        ]);
-        ob_start();
-        ?>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="card">
-                <div class="card-body flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600 text-h4">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div>
-                        <p class="text-caption text-neutral-50">Utilisateurs</p>
-                        <p class="text-h4 font-bold text-neutral-14"><?= checkRightIfLogged('creer_utilisateur') ? ($pdo->query("SELECT COUNT(*) FROM utilisateur.utilisateur")->fetchColumn()) : '-' ?></p>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-body flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-lg bg-success-50 flex items-center justify-center text-success-500 text-h4">
-                        <i class="fas fa-layer-group"></i>
-                    </div>
-                    <div>
-                        <p class="text-caption text-neutral-50">Groupes</p>
-                        <p class="text-h4 font-bold text-neutral-14"><?= checkRightIfLogged('creer_groupe') ? ($pdo->query("SELECT COUNT(*) FROM utilisateur.groupe")->fetchColumn()) : '-' ?></p>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-body flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-lg bg-info-50 flex items-center justify-center text-info-500 text-h4">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div>
-                        <p class="text-caption text-neutral-50">Droits</p>
-                        <p class="text-h4 font-bold text-neutral-14"><?= checkRightIfLogged('affecter_droits') ? ($pdo->query("SELECT COUNT(*) FROM utilisateur.droit")->fetchColumn()) : '-' ?></p>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-body flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-lg bg-warning-50 flex items-center justify-center text-warning-500 text-h4">
-                        <i class="fas fa-history"></i>
-                    </div>
-                    <div>
-                        <p class="text-caption text-neutral-50">Audits</p>
-                        <p class="text-h4 font-bold text-neutral-14"><?= checkRightIfLogged('voir_journal_audit') ? ($pdo->query("SELECT COUNT(*) FROM utilisateur.journal_audit")->fetchColumn()) : '-' ?></p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    case 'error403':
+        // handled via renderErrorPage() directly
+    case 'error404':
+        // handled via renderErrorPage() directly
+    case 'error500':
+        // handled via renderErrorPage() directly
 
-        <div class="card">
-            <div class="card-header">
-                <h2 class="text-body-lg font-semibold text-neutral-14">
-                    <i class="fas fa-tachometer-alt text-brand-600 mr-2"></i>Bienvenue
-                </h2>
-            </div>
-            <div class="card-body">
-                <p class="text-body text-neutral-30">
-                    Bonjour <strong><?= htmlspecialchars($_SESSION['user_name'] ?? '') ?></strong>, vous êtes connecté à l'application <strong>Gestion de Stock</strong>.
-                </p>
-                <p class="text-body text-neutral-50 mt-2">
-                    Utilisez le menu latéral pour naviguer entre les modules.
-                </p>
-
-                <hr class="border-neutral-90 my-4">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <a href="?action=utilisateurs" class="btn-secondary justify-between">
-                        <span><i class="fas fa-user mr-2"></i>Gérer les utilisateurs</span>
-                        <i class="fas fa-chevron-right text-caption"></i>
-                    </a>
-                    <a href="?action=groupes" class="btn-secondary justify-between">
-                        <span><i class="fas fa-layer-group mr-2"></i>Gérer les groupes</span>
-                        <i class="fas fa-chevron-right text-caption"></i>
-                    </a>
-                    <a href="?action=profil" class="btn-secondary justify-between">
-                        <span><i class="fas fa-user-cog mr-2"></i>Mon profil</span>
-                        <i class="fas fa-chevron-right text-caption"></i>
-                    </a>
-                    <a href="?action=journal_audit" class="btn-secondary justify-between">
-                        <span><i class="fas fa-history mr-2"></i>Journal d'audit</span>
-                        <i class="fas fa-chevron-right text-caption"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <?php
-        $content = ob_get_clean();
-        require 'views/layouts/main.php';
+    // ==========================================
+    // DETAIL ROUTES — AJAX modals
+    // ==========================================
+    case 'famille_detail':
+        require_once 'controllers/FamilleController.php';
+        (new FamilleController($pdo))->detail();
         break;
+    case 'produit_detail':
+        require_once 'controllers/ProduitController.php';
+        (new ProduitController($pdo))->detail();
+        break;
+    case 'fournisseur_detail':
+        require_once 'controllers/FournisseurController.php';
+        (new FournisseurController($pdo))->detail();
+        break;
+    case 'client_detail':
+        require_once 'controllers/ClientController.php';
+        (new ClientController($pdo))->detail();
+        break;
+    case 'commande_client_detail':
+        require_once 'controllers/VenteController.php';
+        (new VenteController($pdo))->detailCommande();
+        break;
+    case 'don_detail':
+        require_once 'controllers/ApprovisionnementController.php';
+        (new ApprovisionnementController($pdo))->detailDon();
+        break;
+
+    case 'dashboard':
+        require_once 'controllers/DashboardController.php';
+        (new DashboardController($pdo))->index();
+        break;
+
+    default:
+        renderErrorPage(404, "Action '" . htmlspecialchars($action) . "' introuvable.");
 }
 ?>

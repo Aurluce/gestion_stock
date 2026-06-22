@@ -16,6 +16,16 @@ class RestaurationController {
         $elements = $this->model->getAll($typeFiltre, $search);
         $types = $this->model->getTypes();
         
+        // Pre-parse XML to extract display name for each element
+        $elements = array_map(function($e) {
+            $data = $this->model->parseXml($e['donnees_xml']);
+            $e['nom'] = '';
+            if (!empty($data)) {
+                $e['nom'] = $data['nom'] ?? $data['nom_produit'] ?? $data['reference'] ?? '';
+            }
+            return $e;
+        }, $elements);
+        
         ob_start();
         require __DIR__ . '/../views/structure/restauration/index.php';
         $content = ob_get_clean();
@@ -29,10 +39,12 @@ class RestaurationController {
         $element = $this->model->getById($id);
         
         if (!$element) {
-            $_SESSION['error'] = "Élément introuvable dans la corbeille.";
+            setFlash('Élément introuvable dans la corbeille.', 'danger');
             header('Location: index.php?action=restauration');
             exit;
         }
+        
+        $parsedData = $this->model->parseXml($element['donnees_xml']) ?? [];
         
         ob_start();
         require __DIR__ . '/../views/structure/restauration/view.php';
@@ -47,9 +59,9 @@ class RestaurationController {
         $result = $this->model->restore($id);
         
         if ($result['success']) {
-            $_SESSION['success'] = $result['message'];
+            setFlash($result['message'], 'success');
         } else {
-            $_SESSION['error'] = $result['message'];
+            setFlash($result['message'], 'danger');
         }
         
         header('Location: index.php?action=restauration');
@@ -61,7 +73,7 @@ class RestaurationController {
         
         $id = (int)($_GET['id'] ?? 0);
         $this->model->deletePermanently($id);
-        $_SESSION['success'] = "Élément supprimé définitivement.";
+        setFlash('Élément supprimé définitivement.', 'success');
         
         header('Location: index.php?action=restauration');
         exit;
@@ -74,9 +86,9 @@ class RestaurationController {
         $count = $this->model->clearAll($type);
         
         if ($type) {
-            $_SESSION['success'] = "$count élément(s) de type '$type' supprimé(s) de la corbeille.";
+            setFlash("$count élément(s) de type '$type' supprimé(s) de la corbeille.", 'success');
         } else {
-            $_SESSION['success'] = "$count élément(s) supprimé(s) de la corbeille.";
+            setFlash("$count élément(s) supprimé(s) de la corbeille.", 'success');
         }
         
         header('Location: index.php?action=restauration');

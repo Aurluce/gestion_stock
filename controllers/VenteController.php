@@ -124,6 +124,24 @@ class VenteController {
     }
 
 
+    public function detailCommande(): void {
+        checkRight('lister_commandes_client');
+        $id = (int)($_GET['id'] ?? 0);
+        $commande = $this->commandeModel->find($id);
+        if (!$commande) {
+            header('Content-Type: application/json');
+            echo json_encode(['html' => '<p class="text-danger-500 text-center py-8">Commande introuvable.</p>']);
+            exit;
+        }
+        $lignes = $this->commandeModel->getLignes($id);
+        ob_start();
+        require __DIR__ . '/../views/vente/detail_commande_client.php';
+        $html = ob_get_clean();
+        header('Content-Type: application/json');
+        echo json_encode(['html' => $html]);
+        exit;
+    }
+
     public function bonLivraison() {
         checkRight('lister_livraisons');
 

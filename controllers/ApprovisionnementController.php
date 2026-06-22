@@ -308,6 +308,24 @@ class ApprovisionnementController {
         require __DIR__ . '/../views/approvisionnement/dons.php';
     }
 
+    public function detailDon(): void {
+        checkRight('lister_dons');
+        $id = (int)($_GET['id'] ?? 0);
+        $don = $this->donModel->find($id);
+        if (!$don) {
+            header('Content-Type: application/json');
+            echo json_encode(['html' => '<p class="text-danger-500 text-center py-8">Don introuvable.</p>']);
+            exit;
+        }
+        $lignes = $this->donModel->getLignesEntree($id);
+        ob_start();
+        require __DIR__ . '/../views/approvisionnement/detail_don.php';
+        $html = ob_get_clean();
+        header('Content-Type: application/json');
+        echo json_encode(['html' => $html]);
+        exit;
+    }
+
     public function bonEntree() {
         checkRight('lister_bons_entree');
 

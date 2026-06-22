@@ -62,170 +62,6 @@
   });
 
   /* ============================
-     GLOBAL SEARCH - Ctrl+K
-     ============================ */
-  const searchInput = document.getElementById('globalSearch');
-  const searchDropdown = document.getElementById('searchResults');
-  let searchTimeout = null;
-  let activeSearchIndex = -1;
-
-  // Raccourci clavier Ctrl+K
-  document.addEventListener('keydown', function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-      e.preventDefault();
-      if (searchInput) {
-        searchInput.focus();
-        if (searchDropdown) searchDropdown.classList.remove('hidden');
-      }
-    }
-    
-    // Escape pour fermer
-    if (e.key === 'Escape' && searchDropdown && !searchDropdown.classList.contains('hidden')) {
-      searchDropdown.classList.add('hidden');
-      if (searchInput) searchInput.blur();
-    }
-  });
-
-  // Recherche en temps réel
-  if (searchInput) {
-    searchInput.addEventListener('input', function(e) {
-      const query = e.target.value.trim();
-      
-      if (query.length < 2) {
-        if (searchDropdown) searchDropdown.classList.add('hidden');
-        return;
-      }
-      
-      clearTimeout(searchTimeout);
-      searchTimeout = setTimeout(function() {
-        performSearch(query);
-      }, 300);
-    });
-    
-    // Focus : afficher le dropdown
-    searchInput.addEventListener('focus', function() {
-      if (searchInput.value.trim().length >= 2 && searchDropdown) {
-        searchDropdown.classList.remove('hidden');
-      }
-    });
-    
-    // Navigation clavier dans les résultats
-    searchInput.addEventListener('keydown', function(e) {
-      if (!searchDropdown || searchDropdown.classList.contains('hidden')) return;
-      
-      const items = searchDropdown.querySelectorAll('.search-result-item');
-      
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        activeSearchIndex = Math.min(activeSearchIndex + 1, items.length - 1);
-        updateActiveSearchItem(items);
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        activeSearchIndex = Math.max(activeSearchIndex - 1, -1);
-        updateActiveSearchItem(items);
-      } else if (e.key === 'Enter' && activeSearchIndex >= 0) {
-        e.preventDefault();
-        items[activeSearchIndex].click();
-      }
-    });
-  }
-
-  function updateActiveSearchItem(items) {
-    items.forEach(function(item, index) {
-      if (index === activeSearchIndex) {
-        item.classList.add('active');
-        item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      } else {
-        item.classList.remove('active');
-      }
-    });
-  }
-
-  function performSearch(query) {
-    if (!searchDropdown) return;
-    
-    const loading = searchDropdown.querySelector('.search-loading');
-    const empty = searchDropdown.querySelector('.search-empty');
-    const container = searchDropdown.querySelector('.search-results-container');
-    
-    searchDropdown.classList.remove('hidden');
-    if (loading) loading.classList.remove('hidden');
-    if (empty) empty.classList.add('hidden');
-    if (container) container.innerHTML = '';
-    
-    // Appel AJAX vers le backend
-    fetch('?action=api_search&q=' + encodeURIComponent(query))
-      .then(function(response) { return response.json(); })
-      .then(function(data) {
-        if (loading) loading.classList.add('hidden');
-        
-        if (!data.results || data.results.length === 0) {
-          if (empty) empty.classList.remove('hidden');
-          return;
-        }
-        
-        // Grouper par catégorie
-        const grouped = {};
-        data.results.forEach(function(item) {
-          if (!grouped[item.category]) grouped[item.category] = [];
-          grouped[item.category].push(item);
-        });
-        
-        // Afficher les résultats
-        let html = '';
-        Object.keys(grouped).forEach(function(category) {
-          html += '<div class="search-section">';
-          html += '<h4 class="search-section-title"><i class="fas fa-' + getCategoryIcon(category) + ' mr-2"></i>' + category + '</h4>';
-          html += '<div class="search-section-items">';
-          
-          grouped[category].forEach(function(item) {
-            html += '<a href="' + item.url + '" class="search-result-item">';
-            html += '<div class="search-result-icon"><i class="fas fa-' + (item.icon || 'file') + '"></i></div>';
-            html += '<div class="search-result-content">';
-            html += '<div class="search-result-title">' + highlightQuery(item.title, query) + '</div>';
-            if (item.subtitle) html += '<div class="search-result-subtitle">' + item.subtitle + '</div>';
-            html += '</div></a>';
-          });
-          
-          html += '</div></div>';
-        });
-        
-        if (container) container.innerHTML = html;
-        activeSearchIndex = -1;
-      })
-      .catch(function(error) {
-        console.error('Search error:', error);
-        if (loading) loading.classList.add('hidden');
-        if (empty) empty.classList.remove('hidden');
-      });
-  }
-
-  function getCategoryIcon(category) {
-    const icons = {
-      'Utilisateurs': 'user',
-      'Groupes': 'layer-group',
-      'Produits': 'tag',
-      'Commandes': 'shopping-cart',
-      'Factures': 'file-invoice'
-    };
-    return icons[category] || 'file';
-  }
-
-  function highlightQuery(text, query) {
-    const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-    return text.replace(regex, '<mark class="bg-yellow-200">$1</mark>');
-  }
-
-  // Fermer la recherche si clic externe
-  document.addEventListener('click', function(e) {
-    if (searchDropdown && !searchDropdown.classList.contains('hidden')) {
-      if (!e.target.closest('.topbar-search-wrapper')) {
-        searchDropdown.classList.add('hidden');
-      }
-    }
-  });
-
-  /* ============================
      ACTION SHEETS (Mobile)
      ============================ */
   document.addEventListener('click', function(e) {
@@ -249,27 +85,6 @@
         sheet.classList.add('hidden');
         document.body.style.overflow = '';
       }
-    }
-  });
-
-  /* ============================
-     MOBILE SEARCH MODAL
-     ============================ */
-  document.addEventListener('click', function(e) {
-    const trigger = e.target.closest('[data-mobile-search-toggle]');
-    if (trigger) {
-      const modal = document.getElementById('mobileSearchModal');
-      if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        document.body.style.overflow = 'hidden';
-        // Focus sur l'input
-        setTimeout(function() {
-          const input = modal.querySelector('#globalSearch');
-          if (input) input.focus();
-        }, 100);
-      }
-      e.preventDefault();
     }
   });
 
@@ -459,6 +274,30 @@
     toasts.forEach(function (toast) {
       setTimeout(function () { dismissToast(toast.id); }, 5000);
     });
+  });
+
+  /* ============================
+     DETAIL MODAL — AJAX load detail content
+     ============================ */
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-detail]');
+    if (!btn) return;
+    e.preventDefault();
+    var url = btn.getAttribute('data-detail');
+    var title = btn.getAttribute('data-detail-title') || 'Détails';
+    var body = document.getElementById('detailBody');
+    var titleEl = document.getElementById('detailModalTitle');
+    var modal = document.getElementById('detailModal');
+    if (!body || !modal) return;
+    body.innerHTML = '<div class="flex items-center justify-center py-8"><i class="fas fa-spinner fa-spin text-h3 text-neutral-50"></i></div>';
+    if (titleEl) titleEl.textContent = title;
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+    fetch(url)
+      .then(function(r) { return r.json(); })
+      .then(function(d) { body.innerHTML = d.html; })
+      .catch(function() { body.innerHTML = '<p class="text-danger-500 text-center py-8">Erreur de chargement.</p>'; });
   });
 
   /* ============================

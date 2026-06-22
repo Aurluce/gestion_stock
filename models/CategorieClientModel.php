@@ -36,19 +36,19 @@ class CategorieClientModel {
         return $result ?: null;
     }
 
-    public function create(string $nom, float $tauxRemise = 0.0, ?string $description = null): int {
+    public function create(array $data): int {
         $sql = "INSERT INTO structure.categorie_client (nom_categorie, taux_remise, description)
                 VALUES (:nom, :taux_remise, :description)";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
-            ':nom' => $nom,
-            ':taux_remise' => $tauxRemise,
-            ':description' => $description
+            ':nom' => $data['nom_categorie'] ?? '',
+            ':taux_remise' => $data['taux_remise'] ?? 0,
+            ':description' => $data['description'] ?? null
         ]);
         return (int)$this->pdo->lastInsertId();
     }
 
-    public function update(int $id, string $nom, float $tauxRemise = 0.0, ?string $description = null): bool {
+    public function update(int $id, array $data): bool {
         $sql = "UPDATE structure.categorie_client SET 
                     nom_categorie = :nom,
                     taux_remise = :taux_remise,
@@ -57,10 +57,17 @@ class CategorieClientModel {
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([
             ':id' => $id,
-            ':nom' => $nom,
-            ':taux_remise' => $tauxRemise,
-            ':description' => $description
+            ':nom' => $data['nom_categorie'] ?? '',
+            ':taux_remise' => $data['taux_remise'] ?? 0,
+            ':description' => $data['description'] ?? null
         ]);
+    }
+
+    public function isDeletable(int $id): bool {
+        $sql = "SELECT COUNT(*) FROM structure.client WHERE id_categorie_client = :id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':id' => $id]);
+        return $stmt->fetchColumn() == 0;
     }
 
     public function delete(int $id): bool {

@@ -189,7 +189,7 @@ class RestaurationModel {
         return $newId;
     }
 
-    private function parseXml(string $xmlString): ?array {
+    public function parseXml(string $xmlString): ?array {
         $xmlString = trim($xmlString);
         if ($xmlString === '') {
             return null;

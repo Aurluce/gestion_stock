@@ -16,3 +16,4 @@ require_once __DIR__ . '/loading.php';
 require_once __DIR__ . '/search.php';
 require_once __DIR__ . '/filter.php';
 require_once __DIR__ . '/mobile_helpers.php';
+require_once __DIR__ . '/error.php';

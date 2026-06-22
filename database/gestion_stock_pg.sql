@@ -74,7 +74,7 @@ CREATE TABLE utilisateur.groupe
 CREATE TABLE utilisateur.droit
 (
     id_droit SERIAL PRIMARY KEY,
-    nom_droit VARCHAR(100) NOT NULL,
+    nom_droit VARCHAR(100) NOT NULL UNIQUE,
     module VARCHAR(100) NOT NULL,
     description TEXT,
     date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -2538,6 +2538,29 @@ FOR EACH ROW
 EXECUTE FUNCTION utilisateur.fn_backup_mouvement_banque();
 
 -- ==========================================
+-- AUTO-FILL supprime_par DANS corbeille_xml
+-- ==========================================
+-- Remplit automatiquement supprime_par depuis le contexte session
+-- pour que le tableau corbeille affiche le vrai utilisateur
+CREATE OR REPLACE FUNCTION utilisateur.fn_fill_supprime_par()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  IF NEW.supprime_par IS NULL THEN
+    NEW.supprime_par := current_setting('app.user_id', true)::integer;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_fill_supprime_par ON utilisateur.corbeille_xml;
+CREATE TRIGGER trg_fill_supprime_par
+BEFORE INSERT ON utilisateur.corbeille_xml
+FOR EACH ROW
+EXECUTE FUNCTION utilisateur.fn_fill_supprime_par();
+
+-- ==========================================
 -- DROITS BANQUES
 -- ==========================================
 
@@ -2556,3 +2579,87 @@ SELECT 1, id_droit FROM utilisateur.droit
 WHERE nom_droit IN ('creer_banque', 'modifier_banque', 'supprimer_banque', 
                     'lister_banques', 'creer_mouvement_banque', 'etat_versements_periode')
 ON CONFLICT DO NOTHING;
+
+-- ==========================================
+-- AUTO-AJUSTEMENT solde_credit CLIENT
+-- ==========================================
+-- Met à jour client.solde_credit automatiquement
+-- via facture_client et reglement_client
+CREATE OR REPLACE FUNCTION vente.fn_ajuster_solde_credit()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_id_client INT;
+    v_delta NUMERIC(15,2);
+BEGIN
+    IF TG_TABLE_NAME = 'facture_client' THEN
+        SELECT id_client INTO v_id_client
+        FROM vente.commande_client
+        WHERE id_cc = COALESCE(NEW.id_cc, OLD.id_cc);
+
+        IF TG_OP = 'INSERT' THEN
+            IF NEW.statut IN ('impayee', 'partielle') THEN
+                v_delta := NEW.montant_ttc;
+            ELSE
+                v_delta := 0;
+            END IF;
+        ELSIF TG_OP = 'UPDATE' THEN
+            v_delta := 0;
+            IF OLD.statut IN ('impayee', 'partielle') THEN
+                v_delta := v_delta - OLD.montant_ttc;
+            END IF;
+            IF NEW.statut IN ('impayee', 'partielle') THEN
+                v_delta := v_delta + NEW.montant_ttc;
+            END IF;
+        ELSIF TG_OP = 'DELETE' THEN
+            IF OLD.statut IN ('impayee', 'partielle') THEN
+                v_delta := -OLD.montant_ttc;
+            ELSE
+                v_delta := 0;
+            END IF;
+        END IF;
+
+    ELSIF TG_TABLE_NAME = 'reglement_client' THEN
+        v_id_client := COALESCE(NEW.id_client, OLD.id_client);
+
+        IF TG_OP = 'INSERT' THEN
+            v_delta := -NEW.montant;
+        ELSIF TG_OP = 'UPDATE' THEN
+            v_delta := OLD.montant - NEW.montant;
+        ELSIF TG_OP = 'DELETE' THEN
+            v_delta := OLD.montant;
+        END IF;
+    END IF;
+
+    IF v_delta != 0 AND v_id_client IS NOT NULL THEN
+        UPDATE structure.client
+        SET solde_credit = GREATEST(solde_credit + v_delta, 0)
+        WHERE id_client = v_id_client;
+    END IF;
+
+    RETURN COALESCE(NEW, OLD);
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_ajuster_solde_credit_facture ON vente.facture_client;
+CREATE TRIGGER trg_ajuster_solde_credit_facture
+AFTER INSERT OR UPDATE OF statut, montant_ttc OR DELETE ON vente.facture_client
+FOR EACH ROW
+EXECUTE FUNCTION vente.fn_ajuster_solde_credit();
+
+DROP TRIGGER IF EXISTS trg_ajuster_solde_credit_reglement ON vente.reglement_client;
+CREATE TRIGGER trg_ajuster_solde_credit_reglement
+AFTER INSERT OR UPDATE OF montant OR DELETE ON vente.reglement_client
+FOR EACH ROW
+EXECUTE FUNCTION vente.fn_ajuster_solde_credit();
+
+-- Recalcul one-shot si donnees existantes fausses
+-- UPDATE structure.client c SET solde_credit = (
+--     SELECT COALESCE(SUM(f.montant_ttc - COALESCE((
+--         SELECT SUM(r.montant) FROM vente.reglement_client r WHERE r.id_facture = f.id_facture
+--     ), 0)), 0)
+--     FROM vente.facture_client f
+--     JOIN vente.commande_client cc ON f.id_cc = cc.id_cc
+--     WHERE cc.id_client = c.id_client AND f.statut IN ('impayee','partielle')
+-- );

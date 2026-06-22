@@ -29,6 +29,25 @@ class ProduitModel {
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
     }
     
+    public function search(string $query, ?int $idFamille = null): array {
+        $sql = "
+            SELECT p.*, f.nom_famille, pp.nom_produit as nom_produit_pere
+            FROM structure.produit p
+            LEFT JOIN structure.famille f ON p.id_famille = f.id_famille
+            LEFT JOIN structure.produit pp ON p.id_produit_pere = pp.id_produit
+            WHERE LOWER(p.nom_produit) LIKE LOWER(?)
+        ";
+        $params = ['%' . $query . '%'];
+        if ($idFamille) {
+            $sql .= " AND p.id_famille = ?";
+            $params[] = $idFamille;
+        }
+        $sql .= " ORDER BY p.nom_produit";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function getByFamille(int $idFamille): array {
         $stmt = $this->pdo->prepare("
             SELECT p.id_produit, p.nom_produit, p.prix_vente, p.stock_actuel, p.est_actif,
@@ -42,16 +61,22 @@ class ProduitModel {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     
-    public function getProduitsPeresByFamille(int $idFamille): array {
-        $stmt = $this->pdo->prepare("
+    public function getProduitsPeresByFamille(int $idFamille, ?int $excludeId = null): array {
+        $sql = "
             SELECT id_produit, nom_produit 
             FROM structure.produit 
             WHERE id_produit_pere IS NULL 
             AND id_famille = ? 
             AND est_actif = true
-            ORDER BY nom_produit
-        ");
-        $stmt->execute([$idFamille]);
+        ";
+        $params = [$idFamille];
+        if ($excludeId !== null) {
+            $sql .= " AND id_produit != ?";
+            $params[] = $excludeId;
+        }
+        $sql .= " ORDER BY nom_produit";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $select = [];
         foreach ($rows as $row) {

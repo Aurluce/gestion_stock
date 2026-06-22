@@ -20,8 +20,7 @@ function checkRight($rightName) {
     ");
     $stmt->execute([$_SESSION['user_id'], $rightName]);
     if ($stmt->fetchColumn() == 0) {
-        http_response_code(403);
-        die("Accès refusé – droit '$rightName' manquant.");
+        renderErrorPage(403, "Droit requis : " . htmlspecialchars($rightName));
     }
 }
 
