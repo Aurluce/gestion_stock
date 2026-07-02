@@ -1,5 +1,4 @@
 node_modules/
-vendor/
-public/css/main.min.css
+/vendor/
 *.log
 .DS_Store
