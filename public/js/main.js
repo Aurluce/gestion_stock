@@ -422,4 +422,44 @@
       e.preventDefault();
     }
   });
+
+  /* ============================
+     SELECT ALL / DESELECT ALL (Droits)
+     ============================ */
+  var selectAllCheckbox = document.getElementById('selectAll');
+  if (selectAllCheckbox) {
+    var droitCheckboxes = document.querySelectorAll('input[name="droits[]"]');
+    
+    // Gérer le clic sur "Tout cocher / décocher"
+    selectAllCheckbox.addEventListener('change', function() {
+      droitCheckboxes.forEach(function(checkbox) {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
+    });
+    
+    // Mettre à jour l'état du "selectAll" en fonction des checkboxes individuelles
+    droitCheckboxes.forEach(function(checkbox) {
+      checkbox.addEventListener('change', function() {
+        var allChecked = Array.from(droitCheckboxes).every(function(cb) {
+          return cb.checked;
+        });
+        var someChecked = Array.from(droitCheckboxes).some(function(cb) {
+          return cb.checked;
+        });
+        
+        selectAllCheckbox.checked = allChecked;
+        selectAllCheckbox.indeterminate = someChecked && !allChecked;
+      });
+    });
+    
+    // Initialiser l'état du selectAll si certains droits sont déjà sélectionnés
+    var allChecked = Array.from(droitCheckboxes).every(function(cb) {
+      return cb.checked;
+    });
+    var someChecked = Array.from(droitCheckboxes).some(function(cb) {
+      return cb.checked;
+    });
+    selectAllCheckbox.checked = allChecked;
+    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+  }
 })();

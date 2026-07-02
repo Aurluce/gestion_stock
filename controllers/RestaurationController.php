@@ -5,7 +5,8 @@ class RestaurationController {
     private RestaurationModel $model;
     
     public function __construct(PDO $pdo) {
-        $this->model = new RestaurationModel($pdo);
+        $userId = $_SESSION['user_id'] ?? 1;
+        $this->model = new RestaurationModel($pdo, $userId);
     }
     
     public function index(): void {

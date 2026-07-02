@@ -10,8 +10,8 @@ require_once __DIR__ . '/../components/autoload.php';
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title><?= htmlspecialchars($title ?? 'Gestion Stock') ?></title>
-    <link rel="stylesheet" href="public/css/main.min.css">
-    <link rel="stylesheet" href="public/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="public/css/main.min.css?v=20260630">
+    <link rel="stylesheet" href="public/vendor/fontawesome/css/all.min.css?v=20260630">
     <script src="public/vendor/jquery.min.js"></script>
 </head>
 <body class="appshell">

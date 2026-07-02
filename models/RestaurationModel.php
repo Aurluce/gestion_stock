@@ -1,9 +1,11 @@
 <?php
 class RestaurationModel {
     private PDO $pdo;
+    private int $currentUserId;
     
-    public function __construct(PDO $pdo) {
+    public function __construct(PDO $pdo, int $userId = 1) {
         $this->pdo = $pdo;
+        $this->currentUserId = $userId;
     }
     
     public function getAll(string $type = '', string $search = ''): array {
@@ -68,15 +70,35 @@ class RestaurationModel {
                 case 'PRODUIT_COMPLET':
                     $this->restoreProduit($xmlObj, $idObjet);
                     break;
+                case 'PRODUIT':
+                    $this->restoreProduit($xmlObj, $idObjet);
+                    break;
                 case 'FOURNISSEUR_COMPLET':
+                    $this->restoreFournisseur($xmlObj, $idObjet);
+                    break;
+                case 'FOURNISSEUR':
                     $this->restoreFournisseur($xmlObj, $idObjet);
                     break;
                 case 'MOUVEMENT_BANQUE':
                     $this->restoreMouvementBanque($xmlObj, $idObjet);
                     break;
+                case 'COMMANDE_FOURN_COMPLETE':
+                case 'BON_COMMANDE_FOURN':
+                    $this->restoreCommandeFournComplete($xmlObj, $idObjet);
+                    break;
+                case 'COMMANDE_CLIENT':
+                    $this->restoreCommandeClient($xmlObj, $idObjet);
+                    break;
+                case 'UTILISATEUR':
+                    $this->restoreUtilisateur($xmlObj, $idObjet);
+                    break;
+                case 'GROUPE':
+                    $this->restoreGroupe($xmlObj, $idObjet);
+                    break;
                 default:
                     $this->pdo->rollBack();
-                    return ['success' => false, 'message' => 'Type non supporté'];
+                    $supportedTypes = 'PRODUIT_COMPLET, PRODUIT, FOURNISSEUR_COMPLET, FOURNISSEUR, MOUVEMENT_BANQUE, COMMANDE_FOURN_COMPLETE, BON_COMMANDE_FOURN, COMMANDE_CLIENT, UTILISATEUR, GROUPE';
+                    return ['success' => false, 'message' => "Type non supporté : {$type}. Types supportés : {$supportedTypes}"];
             }
             
             $stmt = $this->pdo->prepare("DELETE FROM utilisateur.corbeille_xml WHERE id_corbeille = ?");
@@ -167,6 +189,103 @@ class RestaurationModel {
         ]);
         
         $this->pdo->exec("SELECT setval('structure.mouvement_banque_id_mouvement_banque_seq', GREATEST((SELECT MAX(id_mouvement_banque) FROM structure.mouvement_banque), (SELECT nextval('structure.mouvement_banque_id_mouvement_banque_seq'))))");
+    }
+
+    private function restoreCommandeFournComplete(array $xml, int $idObjet): void {
+        // Vérifier si la commande existe déjà
+        $stmt = $this->pdo->prepare("SELECT id_bcf FROM approvisionnement.bon_commande_fourn WHERE id_bcf = ?");
+        $stmt->execute([$idObjet]);
+        if ($stmt->fetch()) return;
+
+        // Restaurer l'en-tête de la commande fournisseur
+        $entete = $xml['entete'] ?? [];
+        $stmt = $this->pdo->prepare("
+            INSERT INTO approvisionnement.bon_commande_fourn 
+            (id_bcf, id_fournisseur, id_utilisateur, date_commande, statut, reference, montant_total, observations)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            (int)($entete['id_bcf'] ?? $idObjet),
+            (int)($entete['id_fournisseur'] ?? 0),
+            (int)($entete['id_utilisateur'] ?? 1),
+            (string)($entete['date_commande'] ?? date('Y-m-d')),
+            (string)($entete['statut'] ?? 'EN_COURS'),
+            (string)($entete['reference'] ?? ''),
+            (float)($entete['montant_total'] ?? 0),
+            $entete['observations'] ?? null
+        ]);
+
+        $this->pdo->exec("SELECT setval('approvisionnement.bon_commande_fourn_id_bcf_seq', GREATEST((SELECT MAX(id_bcf) FROM approvisionnement.bon_commande_fourn), (SELECT nextval('approvisionnement.bon_commande_fourn_id_bcf_seq'))))");
+    }
+
+    private function restoreCommandeClient(array $xml, int $idObjet): void {
+        // Vérifier si la commande existe déjà
+        $stmt = $this->pdo->prepare("SELECT id_cc FROM vente.commande_client WHERE id_cc = ?");
+        $stmt->execute([$idObjet]);
+        if ($stmt->fetch()) return;
+
+        // Restaurer la commande client avec id_utilisateur actuel
+        $stmt = $this->pdo->prepare("
+            INSERT INTO vente.commande_client 
+            (id_cc, id_client, id_utilisateur, reference, montant_total, statut, type_vente)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            (int)($xml['id_cc'] ?? $idObjet),
+            (int)($xml['id_client'] ?? 0),
+            $this->currentUserId,
+            (string)($xml['reference'] ?? ''),
+            (float)($xml['montant_total'] ?? 0),
+            (string)($xml['statut'] ?? 'en_cours'),
+            (string)($xml['type_vente'] ?? 'credit')
+        ]);
+
+        $this->pdo->exec("SELECT setval('vente.commande_client_id_cc_seq', GREATEST((SELECT MAX(id_cc) FROM vente.commande_client), (SELECT nextval('vente.commande_client_id_cc_seq'))))");
+    }
+
+    private function restoreUtilisateur(array $xml, int $idObjet): void {
+        // Vérifier si l'utilisateur existe déjà
+        $stmt = $this->pdo->prepare("SELECT id_utilisateur FROM utilisateur.utilisateur WHERE id_utilisateur = ?");
+        $stmt->execute([$idObjet]);
+        if ($stmt->fetch()) return;
+
+        // Restaurer l'utilisateur
+        $stmt = $this->pdo->prepare("
+            INSERT INTO utilisateur.utilisateur 
+            (id_utilisateur, id_groupe, nom_complet, login, password_hash, actif)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            (int)($xml['id_utilisateur'] ?? $idObjet),
+            (int)($xml['id_groupe'] ?? 1),
+            (string)($xml['nom_complet'] ?? ''),
+            (string)($xml['login'] ?? ''),
+            (string)($xml['password_hash'] ?? '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'),
+            true
+        ]);
+
+        $this->pdo->exec("SELECT setval('utilisateur.utilisateur_id_utilisateur_seq', GREATEST((SELECT MAX(id_utilisateur) FROM utilisateur.utilisateur), (SELECT nextval('utilisateur.utilisateur_id_utilisateur_seq'))))");
+    }
+
+    private function restoreGroupe(array $xml, int $idObjet): void {
+        // Vérifier si le groupe existe déjà
+        $stmt = $this->pdo->prepare("SELECT id_groupe FROM utilisateur.groupe WHERE id_groupe = ?");
+        $stmt->execute([$idObjet]);
+        if ($stmt->fetch()) return;
+
+        // Restaurer le groupe
+        $stmt = $this->pdo->prepare("
+            INSERT INTO utilisateur.groupe 
+            (id_groupe, nom_groupe, description)
+            VALUES (?, ?, ?)
+        ");
+        $stmt->execute([
+            (int)($xml['id_groupe'] ?? $idObjet),
+            (string)($xml['nom_groupe'] ?? ''),
+            $xml['description'] ?? null
+        ]);
+
+        $this->pdo->exec("SELECT setval('utilisateur.groupe_id_groupe_seq', GREATEST((SELECT MAX(id_groupe) FROM utilisateur.groupe), (SELECT nextval('utilisateur.groupe_id_groupe_seq'))))");
     }
 
     private function ensureFamilleExists(?int $familleId): int {
